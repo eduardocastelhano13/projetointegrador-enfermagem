@@ -1,9 +1,10 @@
-import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import Header from '../Header/Header'
 import FocusCard from '../FocusCard/FocusCard'
 import ProjectsSection from '../ProjectsSection/ProjectsSection'
 import WorkSession from '../WorkSession/WorkSession'
-import { mockFocusProject, mockProjects } from '../../data/mockProjects'
+import { useSession } from '../../context/SessionContext'
+import { getProjectById, mockProjects } from '../../data/mockData'
 import './Dashboard.css'
 
 function getGreeting() {
@@ -14,8 +15,12 @@ function getGreeting() {
   return 'Boa noite'
 }
 
+const FOCUS_PROJECT_ID = 'elo'
+
 export default function Dashboard({ userName, revealed }) {
-  const [sessionAnchor, setSessionAnchor] = useState(null)
+  const navigate = useNavigate()
+  const { startSession } = useSession()
+  const focusProject = getProjectById(FOCUS_PROJECT_ID)
 
   return (
     <div className={`dashboard ${revealed ? 'is-revealed' : ''}`}>
@@ -30,15 +35,16 @@ export default function Dashboard({ userName, revealed }) {
         <div className="dashboard__grid">
           <div className="dashboard__main">
             <FocusCard
-              project={mockFocusProject}
+              project={focusProject}
               revealed={revealed}
-              onStartSession={() => setSessionAnchor(Date.now())}
+              onStartSession={() => startSession(focusProject.id)}
+              onChat={() => navigate('/chat', { state: { projectId: focusProject.id, intent: 'continue-project' } })}
             />
             <ProjectsSection projects={mockProjects} />
           </div>
 
           <div className="dashboard__side">
-            <WorkSession key={sessionAnchor} projectName={mockFocusProject.name} />
+            <WorkSession defaultProjectId={focusProject.id} />
           </div>
         </div>
       </div>

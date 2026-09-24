@@ -1,7 +1,18 @@
 import { useEffect, useRef, useState } from 'react'
 import './FocusCard.css'
 
-export default function FocusCard({ project, onStartSession, revealed }) {
+function statusSentence(project) {
+  const map = {
+    'Quase completo': `O ${project.name} está quase completo.`,
+    'Em desenvolvimento': `O ${project.name} está em desenvolvimento.`,
+    'Em andamento': `O ${project.name} está em andamento.`,
+  }
+  return map[project.status] ?? `O ${project.name} está progredindo bem.`
+}
+
+export default function FocusCard({ project, onStartSession, onChat, revealed }) {
+  const nextTask = project.tasks.find((t) => !t.done)
+  const statusNote = statusSentence(project)
   const [displayProgress, setDisplayProgress] = useState(0)
   const rafRef = useRef(null)
 
@@ -35,7 +46,7 @@ export default function FocusCard({ project, onStartSession, revealed }) {
       <p className="focus-card__eyebrow">Seu foco agora</p>
 
       <div className="focus-card__top">
-        <h2 className="focus-card__title">{project.name}</h2>
+        <h2 className="focus-card__title">{project.fullName}</h2>
         <span className="focus-card__percent">{displayProgress}%</span>
       </div>
 
@@ -46,18 +57,28 @@ export default function FocusCard({ project, onStartSession, revealed }) {
         />
       </div>
 
-      <p className="focus-card__note">{project.statusNote}</p>
+      <p className="focus-card__note">{statusNote}</p>
 
-      <div className="focus-card__next">
-        <p className="focus-card__next-label">Próxima tarefa</p>
-        <p className="focus-card__next-title">{project.nextTask.title}</p>
-        <p className="focus-card__next-desc">{project.nextTask.note}</p>
+      {nextTask && (
+        <div className="focus-card__next">
+          <p className="focus-card__next-label">Próxima tarefa</p>
+          <p className="focus-card__next-title">{nextTask.label}</p>
+          <p className="focus-card__next-desc">{project.recommendation.text}</p>
+        </div>
+      )}
+
+      <div className="focus-card__actions">
+        <button className="focus-card__cta" onClick={onStartSession}>
+          <span className="focus-card__cta-icon" aria-hidden="true">▶</span>
+          Começar sessão
+        </button>
+        {onChat && (
+          <button className="focus-card__cta focus-card__cta--ghost" onClick={onChat}>
+            <span className="focus-card__cta-icon" aria-hidden="true">✦</span>
+            Conversar com VITA
+          </button>
+        )}
       </div>
-
-      <button className="focus-card__cta" onClick={onStartSession}>
-        <span className="focus-card__cta-icon" aria-hidden="true">▶</span>
-        Começar sessão
-      </button>
     </section>
   )
 }

@@ -1,10 +1,8 @@
-import { useEffect, useRef, useState } from 'react'
+import { Link } from 'react-router-dom'
 import VitaOrb from '../VitaOrb/VitaOrb'
+import { useSession } from '../../context/SessionContext'
+import { getProjectById } from '../../data/mockData'
 import './WorkSession.css'
-
-// After this many seconds of continuous work, VITA suggests a break.
-// Tune down to something like 15 for a quick local demo.
-const BREAK_THRESHOLD_SECONDS = 25 * 60
 
 function formatTime(totalSeconds) {
   const h = String(Math.floor(totalSeconds / 3600)).padStart(2, '0')
@@ -13,42 +11,19 @@ function formatTime(totalSeconds) {
   return `${h}:${m}:${s}`
 }
 
-export default function WorkSession({ projectName }) {
-  const [status, setStatus] = useState('idle') // idle | running | break-suggested | on-break
-  const [seconds, setSeconds] = useState(0)
-  const intervalRef = useRef(null)
-
-  useEffect(() => {
-    if (status === 'running') {
-      intervalRef.current = setInterval(() => {
-        setSeconds((s) => {
-          const next = s + 1
-          if (next >= BREAK_THRESHOLD_SECONDS) {
-            setStatus('break-suggested')
-          }
-          return next
-        })
-      }, 1000)
-    }
-    return () => clearInterval(intervalRef.current)
-  }, [status])
-
-  function startSession() {
-    setSeconds(0)
-    setStatus('running')
-  }
-
-  function startBreak() {
-    clearInterval(intervalRef.current)
-    setStatus('on-break')
-  }
+export default function WorkSession({ defaultProjectId }) {
+  const { status, seconds, projectId, startSession, startBreak } = useSession()
+  const project = getProjectById(projectId ?? defaultProjectId)
 
   const orbState =
     status === 'running' ? 'working' : status === 'on-break' ? 'break' : status === 'break-suggested' ? 'working' : 'idle'
 
   return (
     <section className="work-session">
-      <h2 className="work-session__title">Sessão atual</h2>
+      <div className="work-session__header">
+        <h2 className="work-session__title">Sessão atual</h2>
+        <Link to="/session" className="work-session__link">Ver sessão →</Link>
+      </div>
 
       <div className="work-session__body">
         <VitaOrb state={orbState} size={64} />
@@ -57,7 +32,7 @@ export default function WorkSession({ projectName }) {
           {status === 'idle' && (
             <>
               <p className="work-session__empty">Nenhuma sessão ativa</p>
-              <button className="work-session__button" onClick={startSession}>
+              <button className="work-session__button" onClick={() => startSession(defaultProjectId)}>
                 Começar sessão
               </button>
             </>
@@ -66,7 +41,7 @@ export default function WorkSession({ projectName }) {
           {(status === 'running' || status === 'break-suggested') && (
             <>
               <p className="work-session__timer">{formatTime(seconds)}</p>
-              <p className="work-session__project">Projeto: {projectName}</p>
+              <p className="work-session__project">Projeto: {project?.name}</p>
             </>
           )}
 

@@ -58,6 +58,19 @@
   color: var(--cool-gray);
 }
 
+.project-card__description {
+  font-size: 13px;
+  color: var(--cool-gray);
+  line-height: 1.5;
+}
+
+.project-card__meta {
+  display: flex;
+  gap: 14px;
+  font-size: 12px;
+  color: var(--cool-gray);
+}
+
 .project-card__next {
   padding-top: 10px;
   border-top: 1px solid var(--border-subtle);
@@ -74,4 +87,17 @@
 .project-card__next-value {
   font-size: 13.5px;
   color: var(--off-white);
+}
+
+.project-card__open {
+  margin-top: 4px;
+  align-self: flex-start;
+  font-size: 13px;
+  color: var(--gold-soft);
+  text-decoration: none;
+  transition: opacity 0.2s var(--ease-vita);
+}
+
+.project-card__open:hover {
+  opacity: 0.8;
 }

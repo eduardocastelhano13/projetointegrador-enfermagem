@@ -1,23 +1,49 @@
-import { useState, useCallback } from 'react'
+import { useCallback, useState } from 'react'
+import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import WelcomeSequence from './components/WelcomeSequence/WelcomeSequence'
-import Home from './pages/Home/Home'
+import Sidebar from './components/Sidebar/Sidebar'
+import { SessionProvider } from './context/SessionContext'
+import Dashboard from './components/Dashboard/Dashboard'
+import Projects from './pages/Projects/Projects'
+import ProjectDetails from './pages/ProjectDetails/ProjectDetails'
+import Chat from './pages/Chat/Chat'
+import Session from './pages/Session/Session'
+import Settings from './pages/Settings/Settings'
 
 // Central place where the user's name will eventually come from auth/Supabase.
 const USER_NAME = 'Eduardo'
 
-export default function App() {
+function AppShell() {
   const [introDone, setIntroDone] = useState(false)
-
   const handleIntroFinish = useCallback(() => setIntroDone(true), [])
 
   return (
-    <>
+    <SessionProvider>
       {!introDone && (
         <WelcomeSequence userName={USER_NAME} onFinish={handleIntroFinish} />
       )}
-      {/* Home is mounted underneath from the start so the transition to it can be
-          a cross-fade rather than a mount/unmount jump cut. */}
-      <Home userName={USER_NAME} revealed={introDone} />
-    </>
+
+      <div className="app-shell">
+        <Sidebar />
+        <main className="app-shell__content">
+          <Routes>
+            <Route path="/" element={<Dashboard userName={USER_NAME} revealed={introDone} />} />
+            <Route path="/projects" element={<Projects />} />
+            <Route path="/projects/:id" element={<ProjectDetails />} />
+            <Route path="/chat" element={<Chat />} />
+            <Route path="/session" element={<Session />} />
+            <Route path="/settings" element={<Settings />} />
+          </Routes>
+        </main>
+      </div>
+    </SessionProvider>
+  )
+}
+
+export default function App() {
+  return (
+    <BrowserRouter>
+      <AppShell />
+    </BrowserRouter>
   )
 }

@@ -4,9 +4,25 @@
   gap: 16px;
 }
 
+.projects-section__header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+}
+
 .projects-section__title {
   font-size: 18px;
   color: var(--off-white);
+}
+
+.projects-section__link {
+  font-size: 12.5px;
+  color: var(--gold-soft);
+  text-decoration: none;
+}
+
+.projects-section__link:hover {
+  opacity: 0.8;
 }
 
 .projects-section__grid {

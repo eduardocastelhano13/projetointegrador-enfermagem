@@ -76,6 +76,23 @@ a:focus-visible {
   .container { padding: 0 20px; }
 }
 
+.app-shell {
+  min-height: 100vh;
+}
+
+.app-shell__content {
+  margin-left: 232px;
+  min-height: 100vh;
+  padding: 0 0 24px;
+}
+
+@media (max-width: 900px) {
+  .app-shell__content {
+    margin-left: 0;
+    padding-bottom: 76px;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     animation-duration: 0.01ms !important;

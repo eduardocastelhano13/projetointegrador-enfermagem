@@ -8,9 +8,25 @@
   gap: 18px;
 }
 
+.work-session__header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+}
+
 .work-session__title {
   font-size: 16px;
   color: var(--off-white);
+}
+
+.work-session__link {
+  font-size: 12px;
+  color: var(--gold-soft);
+  text-decoration: none;
+}
+
+.work-session__link:hover {
+  opacity: 0.8;
 }
 
 .work-session__body {
