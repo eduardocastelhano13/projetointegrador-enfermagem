@@ -1,0 +1,43 @@
+.repos-page {
+  padding-bottom: 64px;
+}
+
+.repos-page__content {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+  margin-top: 8px;
+}
+
+.repos-page__title {
+  font-size: 26px;
+  color: var(--off-white);
+}
+
+.repos-page__subtitle {
+  margin-top: 8px;
+  font-size: 14px;
+  color: var(--cool-gray);
+}
+
+.repos-page__grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+}
+
+@media (max-width: 760px) {
+  .repos-page__grid { grid-template-columns: 1fr; }
+}
+
+.repos-page__loading,
+.repos-page__empty {
+  font-size: 14px;
+  color: var(--cool-gray);
+}
+
+.repos-page__settings-link {
+  font-size: 13px;
+  color: var(--gold-soft);
+  align-self: flex-start;
+}
