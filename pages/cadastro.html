@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>CONECTA – Criar conta</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=League+Spartan:wght@800&family=Sen&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/base.css">
+  <link rel="stylesheet" href="../css/login.css">
+</head>
+<body>
+  <main class="login">
+    <form class="login-box" id="form" novalidate>
+      <img class="logo" src="../assets/logo.png" alt="CONECTA – Prontuário digital de enfermagem">
+      <h1>Criar conta</h1>
+
+      <fieldset class="tipo">
+        <legend class="sr">Tipo de conta</legend>
+        <label><input type="radio" name="tipo" value="aluno" checked>Aluno</label>
+        <label><input type="radio" name="tipo" value="professor">Professor</label>
+      </fieldset>
+      <div class="campo">
+        <label class="sr" for="nome">Nome completo</label>
+        <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.5-7 8-7s8 3 8 7"/></svg>
+        <input id="nome" type="text" autocomplete="name" placeholder="Nome completo" required>
+      </div>
+      <div class="campo">
+        <label class="sr" for="email">E-mail</label>
+        <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg>
+        <input id="email" type="email" autocomplete="email" placeholder="E-mail" required>
+      </div>
+      <div class="campo">
+        <label class="sr" for="senha">Senha</label>
+        <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>
+        <input id="senha" type="password" autocomplete="new-password" placeholder="Senha (mínimo 8 caracteres)" required>
+        <button class="olho" type="button" id="olho" aria-label="Mostrar senha">
+          <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>
+        </button>
+      </div>
+      <div class="campo">
+        <label class="sr" for="confirma">Confirmar senha</label>
+        <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>
+        <input id="confirma" type="password" autocomplete="new-password" placeholder="Confirmar senha" required>
+      </div>
+
+
+      <button class="btn" type="submit" id="criar">CRIAR CONTA</button>
+      <p class="msg" id="msg" role="status" aria-live="polite"></p>
+      <p class="rodape-login">Já tem conta? <a href="../index.html">Entrar</a></p>
+    </form>
+  </main>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.2/dist/umd/supabase.js"></script>
+  <script src="../js/config.js"></script>
+  <script src="../js/auth.js"></script>
+  <script src="../js/cadastro.js"></script>
+</body>
+</html>

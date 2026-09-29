@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>CONECTA – Entrar</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=League+Spartan:wght@800&family=Sen&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/login.css">
+</head>
+<body>
+  <main class="login">
+    <form class="login-box" id="form" novalidate>
+      <img class="logo" src="assets/logo.png" alt="CONECTA – Prontuário digital de enfermagem">
+      <fieldset class="tipo">
+        <legend class="sr">Entrar como</legend>
+        <label><input type="radio" name="tipo" value="aluno" checked>Aluno</label>
+        <label><input type="radio" name="tipo" value="professor">Professor</label>
+      </fieldset>
+      <div class="campo">
+        <label class="sr" for="email">E-mail</label>
+        <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.5-7 8-7s8 3 8 7"/></svg>
+        <input id="email" type="email" autocomplete="username" placeholder="E-mail" required>
+      </div>
+      <div class="campo">
+        <label class="sr" for="senha">Senha</label>
+        <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>
+        <input id="senha" type="password" autocomplete="current-password" placeholder="Senha" required>
+        <button class="olho" type="button" id="olho" aria-label="Mostrar senha">
+          <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>
+        </button>
+      </div>
+      <button class="link" type="button" id="recuperar">Recuperar senha</button>
+      <button class="btn" type="submit" id="entrar">LOGIN</button>
+      <a class="btn contorno" href="pages/cadastro.html">Criar conta</a>
+      <p class="msg" id="msg" role="status" aria-live="polite"></p>
+    </form>
+  </main>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.2/dist/umd/supabase.js"></script>
+  <script src="js/config.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/login.js"></script>
+</body>
+</html>

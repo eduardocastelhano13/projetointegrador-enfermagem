@@ -1,0 +1,38 @@
+/* Painel do professor: complementa o aluno.css (menu, cartões, gráficos) */
+.btn.peq{height:38px;padding:0 16px;font-size:.95rem}
+.btn.teal{background:var(--teal);color:#fff}
+.btn.claro{background:#fff;color:var(--marinho);border:2px solid var(--linha)}
+.btn.claro:hover{background:#f4f1ea}
+.btn.perigo{background:var(--erro);color:#fff}
+.acoes-rapidas{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin-bottom:24px}
+.acoes-rapidas .btn{height:54px}
+.barra-acoes{display:flex;flex-wrap:wrap;gap:10px;margin:12px 0 20px}
+.visao{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px}
+.duas{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-bottom:24px;align-items:start}
+.selo.ok{background:var(--teal)}
+.mini .selo{margin:0;font-size:.75rem}
+.linha{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
+.linha .botoes{display:flex;flex-wrap:wrap;gap:8px;flex:none}
+.cab-pac{display:flex;align-items:center;gap:18px;margin-bottom:4px}
+.cab-pac p{margin:4px 0 0;opacity:.8}
+.cab-pac .avatar{width:88px;height:88px}
+.topo-lista{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:14px}
+.topo-lista h2{margin:0}
+.item .selo{align-self:flex-start;margin:0}
+
+/* janelas (modais) */
+.modal{border:0;border-radius:16px;padding:0;width:min(560px,94vw);max-height:92vh;background:var(--cartao);color:var(--marinho);box-shadow:0 20px 60px rgba(10,46,91,.35)}
+.modal::backdrop{background:rgba(10,46,91,.55)}
+.modal form{display:flex;flex-direction:column;gap:14px;padding:24px}
+.modal h2{font-size:1.5rem}
+.modal p{margin:0}
+.campo2{display:flex;flex-direction:column;gap:5px}
+.campo2 span{font-weight:700;font-size:.92rem}
+.campo2 small{opacity:.7}
+.campo2 input,.campo2 select,.campo2 textarea{width:100%;padding:10px 12px;border:2px solid var(--linha);border-radius:8px;background:#fff;font:inherit;color:var(--marinho)}
+.campo2 textarea{resize:vertical}
+.modal .rodape{display:flex;justify-content:flex-end;gap:10px;margin-top:6px}
+.modal .erro{color:var(--erro);min-height:1.2em;font-size:.95rem}
+
+@media(max-width:1100px){.visao{grid-template-columns:1fr 1fr}.duas{grid-template-columns:1fr}}
+@media(max-width:520px){.visao{grid-template-columns:1fr}.linha{flex-direction:column}}
