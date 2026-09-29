@@ -1,0 +1,12 @@
+:root{--creme:#F8F0DF;--marinho:#0A2E5B;--azul:#003D85;--laranja:#F5830F;--erro:#B3261E;--fem:#A8BEEA;--masc:#FB9350}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;background:var(--creme);color:var(--marinho);font-family:'Sen',Georgia,serif;font-size:1.05rem;line-height:1.6}
+h1,h2,h3{font-family:'League Spartan','Arial Black',sans-serif;font-weight:800;line-height:1.1;margin:0}
+a{color:var(--azul)}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+:focus-visible{outline:3px solid var(--laranja);outline-offset:2px}
+.btn{display:inline-flex;align-items:center;justify-content:center;height:46px;padding:0 24px;border:0;border-radius:8px;background:var(--marinho);color:var(--creme);font-family:'League Spartan','Arial Black',sans-serif;font-weight:800;font-size:1.1rem;cursor:pointer}
+.btn:hover{background:var(--azul)}
+.btn.laranja{background:var(--laranja);color:var(--marinho)}
+.btn:disabled{opacity:.6;cursor:wait}
+.link{background:none;border:0;padding:4px;font:inherit;color:var(--azul);text-decoration:underline;cursor:pointer}
