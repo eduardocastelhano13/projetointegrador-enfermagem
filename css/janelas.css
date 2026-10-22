@@ -1,0 +1,232 @@
+/* Botões Especiais e Modais Nativo com Entrada Animada */
+.btn.peq {
+  height: 36px;
+  padding: 0 14px;
+  font-size: 0.92rem;
+}
+
+.btn.teal {
+  background: var(--teal);
+  color: #fff;
+}
+.btn.teal:hover {
+  background: #0b6155;
+}
+
+.btn.claro {
+  background: #fff;
+  color: var(--marinho);
+  border: 2px solid var(--linha);
+}
+
+.btn.claro:hover {
+  background: #f4f1ea;
+}
+
+.btn.perigo {
+  background: var(--erro);
+  color: #fff;
+}
+.btn.perigo:hover {
+  background: #921e17;
+}
+
+/* Diálogos Modais (<dialog>) */
+.modal {
+  border: 0;
+  border-radius: 16px;
+  padding: 0;
+  width: min(560px, 94vw);
+  max-height: 90vh;
+  background: var(--cartao);
+  color: var(--marinho);
+  box-shadow: var(--sombra-elevada);
+}
+
+.modal[open] {
+  animation: escalaModal 0.28s var(--transicao-suave);
+}
+
+.modal::backdrop {
+  background: rgba(10, 46, 91, 0.55);
+  backdrop-filter: blur(4px);
+  animation: surgirSuave 0.25s ease;
+}
+
+.modal.larga {
+  width: min(760px, 96vw);
+}
+
+.modal form,
+.modal .corpo {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 24px;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.modal h2 {
+  font-size: 1.5rem;
+}
+.modal p {
+  margin: 0;
+}
+
+.modal .rodape {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.modal .erro {
+  color: var(--erro);
+  min-height: 1.2em;
+  font-size: 0.92rem;
+  font-weight: 700;
+}
+
+.modal .lista li {
+  padding: 12px 0;
+}
+
+/* Formulários */
+.campo2 {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.campo2 span {
+  font-weight: 700;
+  font-size: 0.92rem;
+}
+
+.campo2 small {
+  opacity: 0.7;
+}
+
+.campo2 input,
+.campo2 select,
+.campo2 textarea {
+  width: 100%;
+  padding: 10px 12px;
+  border: 2px solid var(--linha);
+  border-radius: 8px;
+  background: #fff;
+  font: inherit;
+  color: var(--marinho);
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.campo2 input:focus,
+.campo2 select:focus,
+.campo2 textarea:focus {
+  outline: none;
+  border-color: var(--azul);
+  box-shadow: 0 0 0 3px rgba(0, 61, 133, 0.12);
+}
+
+.campo2 textarea {
+  resize: vertical;
+}
+
+.linha {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.linha .botoes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  flex: none;
+}
+
+.topo-lista {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 14px;
+}
+
+.topo-lista h2,
+.topo-lista h3 {
+  margin: 0;
+}
+
+/* Editor de Múltipla Escolha */
+.questao {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 0;
+  padding: 14px;
+  border: 1px solid var(--linha);
+  border-radius: 12px;
+  background: var(--cartao);
+}
+
+.leg {
+  padding: 0 6px;
+  font-weight: 700;
+}
+.alts {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.alt input[type="text"] {
+  flex: 1;
+  padding: 8px 10px;
+  border: 2px solid var(--linha);
+  border-radius: 8px;
+  background: #fff;
+  font: inherit;
+  color: var(--marinho);
+  transition: border-color 0.2s ease;
+}
+
+.alt input[type="text"]:focus {
+  outline: none;
+  border-color: var(--azul);
+}
+
+.opcao {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 8px 10px;
+  border: 1px solid var(--linha);
+  border-radius: 10px;
+  cursor: pointer;
+  transition:
+    border-color 0.2s ease,
+    background-color 0.2s ease;
+}
+
+.opcao:has(input:checked) {
+  border-color: var(--teal);
+  background: #eef7f5;
+}
+
+details summary {
+  cursor: pointer;
+  font-weight: 700;
+}
+.detalhe {
+  margin: 10px 0 0;
+  padding-left: 22px;
+}
+.detalhe li {
+  margin-bottom: 8px;
+}

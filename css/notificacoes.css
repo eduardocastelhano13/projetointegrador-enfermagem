@@ -1,0 +1,648 @@
+/* Central de notificações CONECTA */
+#conecta-notificacoes {
+  position: fixed;
+  z-index: 1200;
+  top: 14px;
+  right: 16px;
+  font-family: "Sen", Georgia, serif;
+  color: var(--marinho);
+}
+.cn-sino {
+  position: relative;
+  width: 48px;
+  height: 48px;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--linha);
+  border-radius: 14px;
+  background: var(--cartao);
+  color: var(--marinho);
+  box-shadow: var(--sombra);
+  cursor: pointer;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+}
+.cn-sino:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--sombra-elevada);
+}
+.cn-sino > svg {
+  width: 23px;
+  height: 23px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.cn-contador {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 5px;
+  border: 2px solid var(--fundo);
+  border-radius: 999px;
+  background: var(--teal);
+  color: #fff;
+  font:
+    700 11px/16px "Sen",
+    sans-serif;
+  text-align: center;
+}
+.cn-contador[hidden],
+.cn-painel[hidden] {
+  display: none !important;
+}
+.cn-painel {
+  position: absolute;
+  top: 58px;
+  right: 0;
+  width: min(440px, calc(100vw - 28px));
+  max-height: min(76vh, 690px);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid var(--linha);
+  border-radius: 18px;
+  background: var(--cartao);
+  box-shadow: 0 18px 55px rgba(10, 46, 91, 0.2);
+  animation: cnAbrir 0.28s var(--transicao-suave);
+}
+@keyframes cnAbrir {
+  from {
+    opacity: 0;
+    transform: translateY(-10px) scale(0.985);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+.cn-cabecalho {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 20px 20px 14px;
+  border-bottom: 1px solid var(--linha);
+}
+.cn-cabecalho h2 {
+  font:
+    800 1.45rem/1.1 "League Spartan",
+    sans-serif;
+  margin: 0;
+}
+.cn-resumo {
+  margin: 5px 0 0;
+  color: #6b7d95;
+  font-size: 0.82rem;
+}
+.cn-fechar {
+  border: 0;
+  background: transparent;
+  color: #718096;
+  font-size: 26px;
+  line-height: 1;
+  cursor: pointer;
+}
+.cn-filtros {
+  display: flex;
+  gap: 7px;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--linha);
+}
+.cn-filtros button {
+  flex: 1;
+  min-width: 0;
+  padding: 9px 5px;
+  border: 0;
+  border-radius: 9px;
+  background: #f1f3f5;
+  color: #526781;
+  font:
+    600 0.85rem "Sen",
+    sans-serif;
+  cursor: pointer;
+}
+.cn-filtros button.ativo {
+  background: var(--teal);
+  color: #fff;
+}
+.cn-lista {
+  overflow: auto;
+  overscroll-behavior: contain;
+}
+.cn-item {
+  display: flex;
+  gap: 12px;
+  padding: 17px 18px;
+  border-bottom: 1px solid var(--linha);
+  transition: background 0.2s;
+}
+.cn-item:hover {
+  background: #fbfaf6;
+}
+.cn-item.lida {
+  opacity: 0.76;
+}
+.cn-icone {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 46px;
+  height: 46px;
+  border-radius: 14px;
+  background: #dff2ee;
+  color: var(--teal);
+}
+.cn-item--prova .cn-icone,
+.cn-toast--prova .cn-icone {
+  background: #fff0d6;
+  color: #b77912;
+}
+.cn-icone svg {
+  width: 23px;
+  height: 23px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.cn-conteudo {
+  flex: 1;
+  min-width: 0;
+}
+.cn-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+.cn-etiqueta {
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: #dff2ee;
+  color: var(--teal);
+  font:
+    800 0.68rem "League Spartan",
+    sans-serif;
+  letter-spacing: 0.04em;
+}
+.cn-item--prova .cn-etiqueta {
+  background: #fff0d6;
+  color: #a96b06;
+}
+.cn-meta time {
+  margin-left: auto;
+  color: #8795a9;
+  font-size: 0.72rem;
+  white-space: nowrap;
+}
+.cn-ponto {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--teal);
+}
+.cn-conteudo h3 {
+  font:
+    800 1rem/1.25 "League Spartan",
+    sans-serif;
+  margin: 0 0 5px;
+}
+.cn-conteudo p {
+  margin: 0 0 10px;
+  color: #60738d;
+  font-size: 0.85rem;
+  line-height: 1.45;
+  overflow-wrap: anywhere;
+}
+.cn-acao {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 12px;
+  border: 1px solid rgba(15, 123, 108, 0.18);
+  border-radius: 9px;
+  background: #e5f3f0;
+  color: var(--teal);
+  font-size: 0.82rem;
+  font-weight: 700;
+  text-decoration: none;
+}
+.cn-item--prova .cn-acao {
+  background: #fff3df;
+  color: #9b650c;
+  border-color: #f3dfb9;
+}
+.cn-rodape {
+  padding: 12px 16px;
+  text-align: center;
+  background: var(--cartao);
+}
+.cn-marcar {
+  border: 0;
+  background: transparent;
+  color: var(--teal);
+  font:
+    700 0.82rem "Sen",
+    sans-serif;
+  text-decoration: underline;
+  cursor: pointer;
+}
+.cn-vazio {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 8px;
+  padding: 38px 22px;
+  text-align: center;
+  color: #8a9ab0;
+}
+.cn-vazio span {
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: #e2f3ee;
+  color: var(--teal);
+  font-size: 22px;
+}
+.cn-vazio b {
+  color: var(--marinho);
+}
+.cn-vazio small {
+  max-width: 260px;
+  line-height: 1.5;
+}
+.cn-aviso-config {
+  padding: 24px;
+  color: #8a5a12;
+  display: grid;
+  gap: 6px;
+}
+.cn-aviso-config small {
+  line-height: 1.5;
+}
+.cn-toasts {
+  position: fixed;
+  right: clamp(14px, 2.4vw, 34px);
+  bottom: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 10px;
+  width: min(360px, calc(100vw - 28px));
+  pointer-events: none;
+  z-index: 1201;
+}
+/* Cartão de aviso: faixa colorida na lateral, ícone, título, texto e horário */
+.cn-toast {
+  --cn-cor: var(--teal);
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 12px 12px 10px 16px;
+  overflow: hidden;
+  border: 1px solid var(--linha);
+  border-radius: 14px;
+  background: var(--cartao);
+  box-shadow: 0 14px 38px rgba(10, 46, 91, 0.18);
+  pointer-events: auto;
+  opacity: 0;
+  transform: translateY(24px) scale(0.98);
+  transition:
+    opacity 0.3s ease,
+    transform 0.45s var(--transicao-suave);
+  cursor: pointer;
+}
+.cn-toast::before {
+  content: "";
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 4px;
+  background: var(--cn-cor);
+}
+.cn-toast.visivel {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+.cn-toast--prova {
+  --cn-cor: #e39a12;
+}
+.cn-toast--lembrete {
+  --cn-cor: #5b4bd6;
+}
+.cn-toast .cn-icone {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+}
+.cn-toast .cn-icone svg {
+  width: 21px;
+  height: 21px;
+}
+.cn-toast__texto {
+  display: grid;
+  gap: 2px;
+  flex: 1;
+  min-width: 0;
+}
+.cn-toast__texto b {
+  font:
+    800 0.95rem/1.2 "League Spartan",
+    sans-serif;
+  color: var(--marinho);
+  overflow-wrap: anywhere;
+}
+.cn-toast__texto span {
+  font-size: 0.8rem;
+  line-height: 1.35;
+  color: #5d6f88;
+  overflow-wrap: anywhere;
+}
+.cn-toast__texto time {
+  justify-self: end;
+  margin-top: 2px;
+  font-size: 0.72rem;
+  color: #8795a9;
+}
+.cn-toast > button {
+  align-self: flex-start;
+  margin: -2px -2px 0 0;
+  padding: 2px 6px;
+  border: 0;
+  background: transparent;
+  color: #8492a6;
+  font-size: 22px;
+  line-height: 1;
+  cursor: pointer;
+}
+.cn-toast > button:hover {
+  color: var(--marinho);
+}
+.cn-toast:focus-visible,
+.cn-item:focus-visible {
+  outline: 2px solid var(--teal);
+  outline-offset: 2px;
+}
+@media (min-width: 641px) and (max-width: 860px) {
+  #conecta-notificacoes {
+    top: 14px;
+    right: 14px;
+  }
+}
+@media (max-width: 640px) {
+  #conecta-notificacoes {
+    top: 10px;
+    right: 12px;
+  }
+  .cn-sino {
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+  }
+  .cn-painel {
+    position: fixed;
+    top: 60px;
+    right: 10px;
+    width: calc(100vw - 20px);
+    max-height: calc(100dvh - 82px);
+    border-radius: 16px;
+  }
+  .cn-cabecalho {
+    padding: 16px;
+  }
+  .cn-item {
+    padding: 14px 13px;
+    gap: 10px;
+  }
+  .cn-icone {
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+  }
+  .cn-conteudo h3 {
+    font-size: 0.96rem;
+  }
+  .cn-conteudo p {
+    font-size: 0.81rem;
+  }
+  .cn-filtros {
+    padding: 10px;
+  }
+  .cn-filtros button {
+    font-size: 0.78rem;
+  }
+  .cn-toasts {
+    right: 12px;
+    bottom: max(12px, env(safe-area-inset-bottom));
+    width: calc(100vw - 24px);
+    gap: 8px;
+  }
+  .cn-toast {
+    padding: 11px;
+    border-radius: 13px;
+  }
+  .cn-toast__texto b {
+    font-size: 0.9rem;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .cn-painel,
+  .cn-toast,
+  .cn-sino {
+    animation: none !important;
+    transition: none !important;
+  }
+  .cn-toast {
+    transform: none;
+  }
+}
+
+/* ---------- Sino acoplado (sem flutuar) ---------- */
+/* Tela inicial: item da linha do cabeçalho, centralizado com a logo, o título e a data */
+#conecta-notificacoes.cn-no-topo {
+  position: relative;
+  top: auto;
+  right: auto;
+  flex: none;
+  z-index: 1100;
+}
+/* Demais telas: sino na barra "Hoje é", ao lado da data */
+#conecta-notificacoes.cn-na-barra {
+  position: relative;
+  top: auto;
+  right: auto;
+  flex: none;
+  z-index: 1100;
+}
+/* Reserva: se a barra não existir, canto superior direito da página */
+.pagina:has(> #conecta-notificacoes) {
+  position: relative;
+}
+.pagina:has(> #conecta-notificacoes) > :first-child {
+  padding-right: 62px;
+}
+#conecta-notificacoes.cn-na-pagina {
+  position: absolute;
+  top: -6px;
+  right: 0;
+  z-index: 1100;
+}
+@media (max-width: 640px) {
+  /* celular: canto superior direito do cabeçalho, ao lado do título */
+  .aluno-topo:has(> #conecta-notificacoes) {
+    position: relative;
+  }
+  .aluno-topo:has(> #conecta-notificacoes) .aluno-topo__texto {
+    padding-right: 50px;
+  }
+  #conecta-notificacoes.cn-no-topo {
+    position: absolute;
+    top: 0;
+    right: 0;
+  }
+  #conecta-notificacoes.cn-na-pagina {
+    top: -4px;
+  }
+  .pagina:has(> #conecta-notificacoes) > :first-child {
+    padding-right: 52px;
+  }
+}
+
+/* ---------- Lembretes (azul) ---------- */
+.cn-item--lembrete .cn-icone,
+.cn-toast--lembrete .cn-icone {
+  background: #ebe8fb;
+  color: #5b4bd6;
+}
+.cn-item--lembrete .cn-etiqueta {
+  background: #ebe8fb;
+  color: #5b4bd6;
+}
+.cn-item--lembrete .cn-acao {
+  background: #f0eefc;
+  color: #5b4bd6;
+  border-color: #d9d4f7;
+}
+.cn-item--lembrete .cn-ponto {
+  background: #5b4bd6;
+}
+.cn-filtros button {
+  padding-left: 3px;
+  padding-right: 3px;
+  font-size: 0.8rem;
+}
+
+/* ---------- Sino: batidinha quando o pop-up chega até ele ---------- */
+.cn-sino.cn-pulso {
+  animation: cnPulso 0.8s ease;
+}
+@keyframes cnPulso {
+  0% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(15, 123, 108, 0.45);
+  }
+  30% {
+    transform: scale(1.16) rotate(-8deg);
+  }
+  55% {
+    transform: scale(1.1) rotate(8deg);
+    box-shadow: 0 0 0 12px rgba(15, 123, 108, 0);
+  }
+  100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(15, 123, 108, 0);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .cn-sino.cn-pulso {
+    animation: none;
+  }
+}
+
+/* ---------- Ações dentro do item do painel ---------- */
+.cn-acoes {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 14px;
+}
+.cn-item {
+  cursor: pointer;
+}
+.cn-lida {
+  padding: 4px 2px;
+  border: 0;
+  background: transparent;
+  color: #60738d;
+  font: 600 0.78rem "Sen", sans-serif;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
+}
+.cn-lida:hover {
+  color: var(--marinho);
+}
+
+/* ---------- Pop-ups no celular/tablet: acima da barra de navegação inferior ---------- */
+@media (max-width: 860px) {
+  .cn-toasts {
+    right: 12px;
+    bottom: calc(76px + env(safe-area-inset-bottom, 0px));
+    width: min(360px, calc(100vw - 24px));
+    gap: 8px;
+  }
+}
+
+/* ---------- Pacientes (azul) e casos clínicos (ciano) ---------- */
+.cn-toast--paciente {
+  --cn-cor: #1f5fa8;
+}
+.cn-toast--caso {
+  --cn-cor: #0e7490;
+}
+.cn-item--paciente .cn-icone,
+.cn-toast--paciente .cn-icone {
+  background: #e3ecfa;
+  color: #1f5fa8;
+}
+.cn-item--paciente .cn-etiqueta {
+  background: #e3ecfa;
+  color: #1f5fa8;
+}
+.cn-item--paciente .cn-acao {
+  background: #eaf1fb;
+  color: #1f5fa8;
+  border-color: #cfdcf1;
+}
+.cn-item--paciente .cn-ponto {
+  background: #1f5fa8;
+}
+.cn-item--caso .cn-icone,
+.cn-toast--caso .cn-icone {
+  background: #dff3f7;
+  color: #0e7490;
+}
+.cn-item--caso .cn-etiqueta {
+  background: #dff3f7;
+  color: #0e7490;
+}
+.cn-item--caso .cn-acao {
+  background: #e8f6f9;
+  color: #0e7490;
+  border-color: #c3e6ee;
+}
+.cn-item--caso .cn-ponto {
+  background: #0e7490;
+}

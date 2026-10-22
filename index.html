@@ -1,46 +1,325 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="pt-BR">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>CONECTA – Entrar</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=League+Spartan:wght@800&family=Sen&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/base.css">
-  <link rel="stylesheet" href="css/login.css">
-</head>
-<body>
-  <main class="login">
-    <form class="login-box" id="form" novalidate>
-      <img class="logo" src="assets/logo.png" alt="CONECTA – Prontuário digital de enfermagem">
-      <fieldset class="tipo">
-        <legend class="sr">Entrar como</legend>
-        <label><input type="radio" name="tipo" value="aluno" checked>Aluno</label>
-        <label><input type="radio" name="tipo" value="professor">Professor</label>
-      </fieldset>
-      <div class="campo">
-        <label class="sr" for="email">E-mail</label>
-        <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.5-7 8-7s8 3 8 7"/></svg>
-        <input id="email" type="email" autocomplete="username" placeholder="E-mail" required>
-      </div>
-      <div class="campo">
-        <label class="sr" for="senha">Senha</label>
-        <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>
-        <input id="senha" type="password" autocomplete="current-password" placeholder="Senha" required>
-        <button class="olho" type="button" id="olho" aria-label="Mostrar senha">
-          <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>
-        </button>
-      </div>
-      <button class="link" type="button" id="recuperar">Recuperar senha</button>
-      <button class="btn" type="submit" id="entrar">LOGIN</button>
-      <a class="btn contorno" href="pages/cadastro.html">Criar conta</a>
-      <p class="msg" id="msg" role="status" aria-live="polite"></p>
-    </form>
-  </main>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.2/dist/umd/supabase.js"></script>
-  <script src="js/config.js"></script>
-  <script src="js/auth.js"></script>
-  <script src="js/login.js"></script>
-</body>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>CONECTA – Entrar</title>
+    <link rel="icon" type="image/png" href="assets/logo.png" />
+    <link rel="apple-touch-icon" href="assets/logo.png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=League+Spartan:wght@800&family=Sen&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="preload" as="image" href="assets/logo.png" />
+    <link rel="stylesheet" href="css/base.css" />
+    <link rel="stylesheet" href="css/login.css" />
+  </head>
+  <body class="pagina-auth">
+    <div class="auth" id="auth" data-view="login">
+      <!-- Lado esquerdo: identidade (fica parado durante toda a navegação) -->
+      <aside class="auth-marca">
+        <div class="auth-marca__conteudo">
+          <img
+            class="auth-marca__logo"
+            src="assets/logo.png"
+            alt="CONECTA – Prontuário Digital de Enfermagem"
+          />
+          <p class="auth-marca__frase">
+            Cuidado, conhecimento e tecnologia conectados.
+          </p>
+          <p class="auth-marca__sub">Prontuário Digital de Enfermagem</p>
+        </div>
+      </aside>
+
+      <!-- Lado direito: login e cadastro se alternam aqui -->
+      <main class="auth-painel">
+        <!-- Onda azul que passa por cima da tela na troca login <-> cadastro -->
+        <div class="auth-onda" aria-hidden="true">
+          <i class="auth-onda__mar auth-onda__mar--crista"></i>
+          <i class="auth-onda__mar"></i>
+        </div>
+
+        <div class="auth-palco">
+          <!-- LOGIN -->
+          <form
+            class="auth-form"
+            id="form-login"
+            novalidate
+            aria-labelledby="t-login"
+          >
+            <header class="auth-cab">
+              <h1 id="t-login">Acesse sua conta</h1>
+              <p>Entre para continuar seus estudos e atividades.</p>
+            </header>
+
+            <fieldset class="auth-tipo">
+              <legend class="sr">Entrar como</legend>
+              <label
+                ><input
+                  type="radio"
+                  name="tipo"
+                  value="aluno"
+                  checked
+                />Aluno</label
+              >
+              <label
+                ><input
+                  type="radio"
+                  name="tipo"
+                  value="professor"
+                />Professor</label
+              >
+            </fieldset>
+
+            <div class="auth-campo">
+              <label class="sr" for="email"> RA do aluno</label>
+              <svg class="ico" viewBox="0 0 24 24" aria-hidden="true">
+                <rect x="3" y="5" width="18" height="14" rx="2" />
+                <path d="m3 7 9 6 9-6" />
+              </svg>
+              <input
+                id="email"
+                type="email"
+                autocomplete="username"
+                placeholder="Seu e-mail"
+                required
+              />
+            </div>
+
+            <div class="auth-campo">
+              <label class="sr" for="senha">Senha</label>
+              <svg class="ico" viewBox="0 0 24 24" aria-hidden="true">
+                <rect x="5" y="11" width="14" height="10" rx="2" />
+                <path d="M8 11V8a4 4 0 0 1 8 0v3" />
+              </svg>
+              <input
+                id="senha"
+                type="password"
+                autocomplete="current-password"
+                placeholder="Sua senha"
+                required
+              />
+              <button
+                class="auth-olho"
+                type="button"
+                id="olho"
+                aria-label="Mostrar senha"
+              >
+                <svg class="ico" viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z" />
+                  <circle cx="12" cy="12" r="3" />
+                </svg>
+              </button>
+            </div>
+
+            <div class="auth-linha">
+              <button class="auth-link" type="button" id="recuperar">
+                Esqueceu sua senha?
+              </button>
+            </div>
+
+            <p class="auth-msg" id="msg" role="status" aria-live="polite"></p>
+
+            <button
+              class="auth-btn auth-btn--primario"
+              type="submit"
+              id="entrar"
+            >
+              Entrar
+            </button>
+
+            <p class="auth-divisor"><span>ou</span></p>
+            <button
+              class="auth-btn auth-btn--google"
+              type="button"
+              id="google-login"
+            >
+              <svg viewBox="0 0 48 48" aria-hidden="true">
+                <path
+                  fill="#EA4335"
+                  d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"
+                />
+                <path
+                  fill="#4285F4"
+                  d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"
+                />
+                <path
+                  fill="#FBBC05"
+                  d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"
+                />
+                <path
+                  fill="#34A853"
+                  d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"
+                />
+              </svg>
+              Continuar com Google
+            </button>
+
+            <p class="auth-troca">Ainda não tem conta?</p>
+            <button
+              class="auth-btn auth-btn--contorno"
+              type="button"
+              data-ir="cadastro"
+            >
+              Criar conta
+            </button>
+          </form>
+
+          <!-- CADASTRO -->
+          <form
+            class="auth-form"
+            id="form-cadastro"
+            novalidate
+            aria-labelledby="t-cadastro"
+          >
+            <header class="auth-cab">
+              <h1 id="t-cadastro">Crie sua conta</h1>
+              <p>Faça parte do Conecta e acesse seu ambiente.</p>
+            </header>
+
+            <fieldset class="auth-tipo">
+              <legend class="sr">Tipo de conta</legend>
+              <label
+                ><input
+                  type="radio"
+                  name="tipo-cadastro"
+                  value="aluno"
+                  checked
+                />Aluno</label
+              >
+              <label
+                ><input
+                  type="radio"
+                  name="tipo-cadastro"
+                  value="professor"
+                />Professor</label
+              >
+            </fieldset>
+
+            <div class="auth-campo">
+              <label class="sr" for="c-nome">Nome completo</label>
+              <svg class="ico" viewBox="0 0 24 24" aria-hidden="true">
+                <circle cx="12" cy="8" r="4" />
+                <path d="M4 21c0-4 3.5-7 8-7s8 3 8 7" />
+              </svg>
+              <input
+                id="c-nome"
+                type="text"
+                autocomplete="name"
+                placeholder="Nome completo"
+                required
+              />
+            </div>
+
+            <div class="auth-campo">
+              <label class="sr" for="c-email">E-mail</label>
+              <svg class="ico" viewBox="0 0 24 24" aria-hidden="true">
+                <rect x="3" y="5" width="18" height="14" rx="2" />
+                <path d="m3 7 9 6 9-6" />
+              </svg>
+              <input
+                id="c-email"
+                type="email"
+                autocomplete="email"
+                placeholder="Seu e-mail"
+                required
+              />
+            </div>
+
+            <div class="auth-campo">
+              <label class="sr" for="c-senha">Senha</label>
+              <svg class="ico" viewBox="0 0 24 24" aria-hidden="true">
+                <rect x="5" y="11" width="14" height="10" rx="2" />
+                <path d="M8 11V8a4 4 0 0 1 8 0v3" />
+              </svg>
+              <input
+                id="c-senha"
+                type="password"
+                autocomplete="new-password"
+                placeholder="Senha (mínimo 8 caracteres)"
+                required
+              />
+              <button
+                class="auth-olho"
+                type="button"
+                id="c-olho"
+                aria-label="Mostrar senha"
+              >
+                <svg class="ico" viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z" />
+                  <circle cx="12" cy="12" r="3" />
+                </svg>
+              </button>
+            </div>
+
+            <div class="auth-campo">
+              <label class="sr" for="c-confirma">Confirmar senha</label>
+              <svg class="ico" viewBox="0 0 24 24" aria-hidden="true">
+                <rect x="5" y="11" width="14" height="10" rx="2" />
+                <path d="M8 11V8a4 4 0 0 1 8 0v3" />
+              </svg>
+              <input
+                id="c-confirma"
+                type="password"
+                autocomplete="new-password"
+                placeholder="Confirmar senha"
+                required
+              />
+            </div>
+
+            <p class="auth-msg" id="c-msg" role="status" aria-live="polite"></p>
+
+            <button
+              class="auth-btn auth-btn--primario"
+              type="submit"
+              id="criar"
+            >
+              Criar minha conta
+            </button>
+
+            <p class="auth-divisor"><span>ou</span></p>
+            <button
+              class="auth-btn auth-btn--google"
+              type="button"
+              id="google-cadastro"
+            >
+              <svg viewBox="0 0 48 48" aria-hidden="true">
+                <path
+                  fill="#EA4335"
+                  d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"
+                />
+                <path
+                  fill="#4285F4"
+                  d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"
+                />
+                <path
+                  fill="#FBBC05"
+                  d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"
+                />
+                <path
+                  fill="#34A853"
+                  d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"
+                />
+              </svg>
+              Continuar com Google
+            </button>
+
+            <p class="auth-troca">
+              Já possui uma conta?
+              <button class="auth-link" type="button" data-ir="login">
+                Entrar
+              </button>
+            </p>
+          </form>
+        </div>
+      </main>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.2/dist/umd/supabase.js"></script>
+    <script src="js/config.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/login.js"></script>
+  </body>
 </html>

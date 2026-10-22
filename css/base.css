@@ -1,12 +1,171 @@
-:root{--creme:#F8F0DF;--marinho:#0A2E5B;--azul:#003D85;--laranja:#F5830F;--erro:#B3261E;--fem:#A8BEEA;--masc:#FB9350}
-*{box-sizing:border-box}
-body{margin:0;min-height:100vh;background:var(--creme);color:var(--marinho);font-family:'Sen',Georgia,serif;font-size:1.05rem;line-height:1.6}
-h1,h2,h3{font-family:'League Spartan','Arial Black',sans-serif;font-weight:800;line-height:1.1;margin:0}
-a{color:var(--azul)}
-.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
-:focus-visible{outline:3px solid var(--laranja);outline-offset:2px}
-.btn{display:inline-flex;align-items:center;justify-content:center;height:46px;padding:0 24px;border:0;border-radius:8px;background:var(--marinho);color:var(--creme);font-family:'League Spartan','Arial Black',sans-serif;font-weight:800;font-size:1.1rem;cursor:pointer}
-.btn:hover{background:var(--azul)}
-.btn.laranja{background:var(--laranja);color:var(--marinho)}
-.btn:disabled{opacity:.6;cursor:wait}
-.link{background:none;border:0;padding:4px;font:inherit;color:var(--azul);text-decoration:underline;cursor:pointer}
+/* Variáveis globais, reset, tipografia e animações chave */
+:root {
+  /* Paleta Base */
+  --marinho: #0a2e5b;
+  --creme: #f8f0df;
+  --azul: #003d85;
+  --teal: #0f7b6c;
+  --ouro: #b8893b;
+  --laranja: #f5830f;
+  --erro: #b3261e;
+  --roxo: #7b4fb3;
+
+  /* Avatares */
+  --fem: #a8beea;
+  --masc: #fb9350;
+
+  /* Superfícies e Linhas */
+  --fundo: #faf7f0;
+  --cartao: #fffdf9;
+  --linha: rgba(10, 46, 91, 0.12);
+  --sombra: 0 4px 12px rgba(10, 46, 91, 0.05);
+  --sombra-elevada: 0 16px 36px rgba(10, 46, 91, 0.15);
+
+  /* Curvas de Animação */
+  --transicao-suave: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: var(--fundo);
+  color: var(--marinho);
+  font-family: "Sen", Georgia, serif;
+  font-size: 1rem;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1,
+h2,
+h3,
+h4 {
+  font-family: "League Spartan", sans-serif;
+  font-weight: 800;
+  line-height: 1.1;
+  margin: 0;
+  color: var(--marinho);
+}
+
+a {
+  color: var(--azul);
+  transition:
+    color 0.2s ease,
+    opacity 0.2s ease;
+}
+
+a:hover {
+  opacity: 0.85;
+}
+
+.sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+:focus-visible {
+  outline: 3px solid var(--laranja);
+  outline-offset: 2px;
+}
+
+/* Keyframes de Fluidez */
+@keyframes surgirSuave {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes escalaModal {
+  from {
+    opacity: 0;
+    transform: scale(0.95) translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+/* Botões Globais */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 46px;
+  padding: 0 24px;
+  border: 0;
+  border-radius: 8px;
+  background: var(--marinho);
+  color: var(--creme);
+  font-family: "League Spartan", sans-serif;
+  font-weight: 800;
+  font-size: 1.1rem;
+  cursor: pointer;
+  text-decoration: none;
+  transition:
+    background-color 0.2s ease,
+    transform 0.15s var(--transicao-suave),
+    box-shadow 0.2s ease;
+  will-change: transform;
+}
+
+.btn:hover {
+  background: var(--azul);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(10, 46, 91, 0.15);
+}
+
+.btn:active {
+  transform: translateY(1px) scale(0.98);
+  box-shadow: none;
+}
+
+.btn.laranja {
+  background: var(--laranja);
+  color: var(--marinho);
+}
+
+.btn.laranja:hover {
+  background: #e07409;
+}
+
+.btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.link {
+  background: none;
+  border: 0;
+  padding: 4px;
+  font: inherit;
+  color: var(--azul);
+  text-decoration: underline;
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.link:hover {
+  color: var(--marinho);
+}

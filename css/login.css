@@ -1,23 +1,606 @@
-.login{min-height:100vh;display:grid;place-items:center;padding:24px}
-.login-box{width:min(440px,100%);text-align:center}
-.logo{width:min(300px,72%);height:auto;margin-bottom:8px}
-.campo{position:relative;margin:14px 0}
-.campo .ico{position:absolute;left:14px;top:50%;translate:0 -50%;width:26px;height:26px;stroke:var(--marinho);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
-.campo input{width:100%;height:58px;padding:0 54px;border:3px solid var(--marinho);border-radius:8px;background:transparent;font:inherit;color:var(--marinho)}
-.olho{position:absolute;right:8px;top:50%;translate:0 -50%;background:none;border:0;padding:8px;cursor:pointer}
-.olho .ico{position:static;translate:none}
-.login .btn{width:100%;height:54px;margin-top:14px;font-size:1.4rem;letter-spacing:.04em}
-.msg{min-height:1.6em;margin:10px 0 0;font-size:.95rem}
-.msg.erro{color:var(--erro)}
-.msg.ok{color:var(--azul)}
-.btn.contorno{background:transparent;color:var(--marinho);border:3px solid var(--marinho);text-decoration:none;font-size:1.2rem}
-.btn.contorno:hover{background:var(--marinho);color:var(--creme)}
-.login h1{font-size:2rem;margin:4px 0 12px}
-.rodape-login{margin:14px 0 0}
+/* ==========================================================================
+   Autenticação (login + cadastro) — layout dividido
+   Esquerda: identidade fixa. Direita: formulários que se alternam.
+   ========================================================================== */
+.pagina-auth {
+  margin: 0;
+  background: #faf7f1;
+}
 
-.tipo{display:grid;grid-template-columns:1fr 1fr;margin:8px 0 4px;padding:0;border:3px solid var(--marinho);border-radius:8px;overflow:hidden}
-.tipo label{position:relative;padding:11px 8px;cursor:pointer;font-family:'League Spartan','Arial Black',sans-serif;font-weight:800;font-size:1.15rem}
-.tipo input{position:absolute;opacity:0}
-.tipo label:has(input:checked){background:var(--marinho);color:var(--creme)}
-.tipo label:has(input:focus-visible){outline:3px solid var(--laranja);outline-offset:-6px}
-[hidden]{display:none!important}
+.auth {
+  --a-marinho: #10335d;
+  --a-marinho-esc: #0b2749;
+  --a-petroleo: #087f70;
+  --a-petroleo-esc: #066b5f;
+  --a-creme: #faf7f1;
+  --a-borda: #d3dce6;
+  --a-suave: #e8edf3;
+  --a-mudo: #586d85;
+  --a-erro: #b3261e;
+  --a-ease: cubic-bezier(0.4, 0, 0.2, 1);
+  --a-desloca: 64px;
+  --a-raio: 150px; /* curvatura da borda da onda */
+
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: grid;
+  grid-template-columns: minmax(0, 42fr) minmax(0, 58fr);
+  font-family:
+    "Sen",
+    system-ui,
+    -apple-system,
+    "Segoe UI",
+    sans-serif;
+  color: var(--a-marinho);
+  background: var(--a-creme);
+}
+
+.auth *,
+.auth *::before,
+.auth *::after {
+  box-sizing: border-box;
+}
+
+.sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ---------- Lado esquerdo: identidade ---------- */
+.auth-marca {
+  position: sticky;
+  top: 0;
+  align-self: start;
+  height: 100vh;
+  height: 100dvh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 48px clamp(24px, 4vw, 64px);
+  background: var(--a-marinho);
+  color: #ffffff;
+  text-align: center;
+}
+
+.auth-marca__conteudo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  max-width: 420px;
+}
+
+/* A logo original tem fundo creme: ela fica num cartão da mesma cor, sem ser alterada */
+.auth-marca__logo {
+  display: block;
+  width: min(300px, 100%);
+  height: auto;
+  margin: 0 0 36px;
+  padding: 10px;
+  border-radius: 28px;
+  background: #f8f0df;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.35);
+}
+
+.auth-marca__frase {
+  margin: 0;
+  max-width: 22ch;
+  font-size: clamp(1.25rem, 2vw, 1.65rem);
+  line-height: 1.35;
+  text-wrap: balance;
+}
+
+.auth-marca__frase::after {
+  content: "";
+  display: block;
+  width: 48px;
+  height: 3px;
+  margin: 22px auto 18px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #5fd0bd, #e3c27a);
+}
+
+.auth-marca__sub {
+  margin: 0;
+  font-size: 0.8rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.75);
+}
+
+/* ---------- Lado direito: palco dos formulários ---------- */
+.auth-painel {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+  padding: 40px clamp(20px, 5vw, 64px);
+  overflow-x: hidden;
+  overflow-x: clip;
+  position: relative;
+}
+
+/* Os dois formulários ocupam a mesma célula: a altura do palco é sempre a do maior,
+   então nada "pula" quando um sai e o outro entra. */
+.auth-palco {
+  display: grid;
+  width: 100%;
+  max-width: 430px;
+}
+
+.auth-form {
+  grid-area: 1 / 1;
+  align-self: center;
+  min-width: 0;
+  margin: 0;
+  opacity: 1;
+  transform: translateX(0);
+  visibility: visible;
+  /* quem ENTRA: espera um instante e aparece */
+  transition:
+    transform 0.42s var(--a-ease),
+    opacity 0.3s ease 0.12s,
+    visibility 0s linear 0s;
+}
+
+/* quem SAI: some mais rápido e desliza */
+.auth[data-view="login"] #form-cadastro,
+.auth[data-view="cadastro"] #form-login {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition:
+    transform 0.42s var(--a-ease),
+    opacity 0.26s ease,
+    visibility 0s linear 0.42s;
+}
+
+.auth[data-view="login"] #form-cadastro {
+  transform: translateX(var(--a-desloca));
+}
+.auth[data-view="cadastro"] #form-login {
+  transform: translateX(calc(var(--a-desloca) * -1));
+}
+
+/* sem animação no primeiro desenho da página */
+.auth:not(.anima) .auth-form {
+  transition: none !important;
+}
+
+/* ---------- Onda azul da transição ----------
+   Nasce na borda do painel institucional, cresce até cobrir todo o lado direito
+   e recua. Os formulários trocam enquanto ela cobre a tela. */
+.auth-onda {
+  position: absolute;
+  inset: 0;
+  z-index: 20;
+  overflow: hidden;
+  pointer-events: none;
+  visibility: hidden;
+}
+
+.auth-onda.ativa {
+  visibility: visible;
+}
+
+.auth-onda__mar {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: calc(100% + var(--a-raio) * 2);
+  border-radius: var(--a-raio) / 50%;
+  background: var(--a-marinho);
+  transform: translateX(-100%);
+  will-change: transform;
+}
+
+/* faixa verde-petróleo que vai um pouco à frente, como a crista da onda */
+.auth-onda__mar--crista {
+  background: var(--a-petroleo);
+}
+
+.auth.trocando .auth-form {
+  pointer-events: none;
+}
+
+/* ---------- Cabeçalho ---------- */
+.auth-cab h1 {
+  margin: 0 0 6px;
+  font-family: "League Spartan", "Sen", sans-serif;
+  font-weight: 800;
+  font-size: clamp(1.7rem, 2.6vw, 2rem);
+  line-height: 1.15;
+  color: var(--a-marinho);
+}
+
+.auth-cab p {
+  margin: 0 0 22px;
+  font-size: 0.95rem;
+  line-height: 1.45;
+  color: var(--a-mudo);
+}
+
+/* ---------- Seletor Aluno / Professor ---------- */
+.auth-tipo {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px;
+  margin: 0 0 18px;
+  padding: 4px;
+  border: 0;
+  border-radius: 12px;
+  background: var(--a-suave);
+}
+
+.auth-tipo label {
+  position: relative;
+  padding: 10px 8px;
+  border-radius: 9px;
+  text-align: center;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--a-mudo);
+  cursor: pointer;
+  user-select: none;
+  transition:
+    background 0.2s ease,
+    color 0.2s ease;
+}
+
+.auth-tipo label:hover {
+  color: var(--a-marinho);
+}
+
+.auth-tipo input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.auth-tipo label:has(input:checked) {
+  background: var(--a-marinho);
+  color: #ffffff;
+}
+
+.auth-tipo label:has(input:focus-visible) {
+  outline: 3px solid var(--a-petroleo);
+  outline-offset: 2px;
+}
+
+/* ---------- Campos ---------- */
+.auth-campo {
+  position: relative;
+  margin: 0 0 14px;
+}
+
+.auth-campo .ico {
+  position: absolute;
+  left: 15px;
+  top: 50%;
+  width: 20px;
+  height: 20px;
+  transform: translateY(-50%);
+  stroke: var(--a-marinho);
+  fill: none;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  pointer-events: none;
+  transition: stroke 0.2s ease;
+}
+
+.auth-campo:focus-within > .ico {
+  stroke: var(--a-petroleo);
+}
+
+.auth-campo input {
+  width: 100%;
+  height: 54px;
+  padding: 0 48px 0 46px;
+  border: 1.5px solid var(--a-borda);
+  border-radius: 12px;
+  background: #ffffff;
+  font: inherit;
+  font-size: 0.98rem;
+  color: var(--a-marinho);
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.auth-campo input::placeholder {
+  color: #6b7e94;
+}
+
+.auth-campo input:focus {
+  outline: none;
+  border-color: var(--a-petroleo);
+  box-shadow: 0 0 0 3px rgba(8, 127, 112, 0.18);
+}
+
+.auth-olho {
+  position: absolute;
+  right: 6px;
+  top: 50%;
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  padding: 0;
+  transform: translateY(-50%);
+  border: 0;
+  border-radius: 10px;
+  background: none;
+  cursor: pointer;
+}
+
+.auth-olho .ico {
+  position: static;
+  transform: none;
+}
+
+.auth-olho:hover {
+  background: var(--a-suave);
+}
+
+.auth-olho:focus-visible {
+  outline: 3px solid var(--a-petroleo);
+  outline-offset: 1px;
+}
+
+/* ---------- Links e botões ---------- */
+.auth-linha {
+  display: flex;
+  justify-content: flex-end;
+  margin: -4px 0 2px;
+}
+
+.auth-link {
+  padding: 6px 2px;
+  border: 0;
+  background: none;
+  font: inherit;
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--a-petroleo-esc);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+
+.auth-link:hover {
+  color: var(--a-marinho);
+}
+
+.auth-link:focus-visible {
+  outline: 3px solid var(--a-petroleo);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+.auth-msg {
+  min-height: 1.5em;
+  margin: 6px 0 10px;
+  font-size: 0.9rem;
+  font-weight: 700;
+  line-height: 1.4;
+  color: var(--a-mudo);
+}
+.auth-msg.erro {
+  color: var(--a-erro);
+}
+.auth-msg.ok {
+  color: var(--a-petroleo-esc);
+}
+
+.auth-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 52px;
+  margin: 0;
+  padding: 0 16px;
+  border: 1.5px solid transparent;
+  border-radius: 12px;
+  font: inherit;
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  cursor: pointer;
+  transition:
+    background 0.2s ease,
+    color 0.2s ease,
+    transform 0.1s ease;
+}
+
+.auth-btn:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+.auth-btn:focus-visible {
+  outline: 3px solid var(--a-petroleo);
+  outline-offset: 2px;
+}
+
+.auth-btn--primario {
+  background: var(--a-marinho);
+  color: #ffffff;
+}
+.auth-btn--primario:hover:not(:disabled) {
+  background: var(--a-marinho-esc);
+}
+.auth-btn--primario:disabled {
+  opacity: 0.65;
+  cursor: progress;
+}
+
+.auth-btn--contorno {
+  background: transparent;
+  border-color: var(--a-marinho);
+  color: var(--a-marinho);
+}
+.auth-btn--contorno:hover {
+  background: var(--a-marinho);
+  color: #ffffff;
+}
+
+.auth-troca {
+  margin: 18px 0 12px;
+  text-align: center;
+  font-size: 0.92rem;
+  color: var(--a-mudo);
+}
+
+.auth-troca .auth-link {
+  padding: 2px;
+  font-size: inherit;
+}
+
+/* ---------- Tablet ---------- */
+@media (max-width: 1024px) {
+  .auth {
+    grid-template-columns: minmax(0, 38fr) minmax(0, 62fr);
+  }
+  .auth-marca {
+    padding: 40px 24px;
+  }
+  .auth-marca__logo {
+    width: min(230px, 100%);
+    margin-bottom: 28px;
+  }
+  .auth-painel {
+    padding: 32px 28px;
+  }
+}
+
+/* ---------- Celular: painel institucional vira um topo compacto ---------- */
+@media (max-width: 760px) {
+  .auth {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto 1fr;
+    --a-desloca: 40px;
+    --a-raio: 70px;
+  }
+
+  .auth-marca {
+    position: static;
+    height: auto;
+    padding: 18px 20px;
+    text-align: left;
+  }
+
+  .auth-marca__conteudo {
+    flex-direction: row;
+    align-items: center;
+    gap: 16px;
+    max-width: 480px;
+    flex-wrap: wrap;
+  }
+
+  .auth-marca__logo {
+    width: 84px;
+    margin: 0;
+    padding: 6px;
+    border-radius: 18px;
+    box-shadow: none;
+    flex: 0 0 auto;
+  }
+
+  .auth-marca__frase {
+    flex: 1 1 0;
+    min-width: 0;
+    max-width: none;
+    font-size: 1rem;
+    line-height: 1.3;
+  }
+
+  .auth-marca__frase::after,
+  .auth-marca__sub {
+    display: none;
+  }
+
+  .auth-painel {
+    align-items: flex-start;
+    padding: 28px 20px 40px;
+  }
+}
+
+/* ---------- Movimento reduzido: só um fade curto, sem deslizar ---------- */
+@media (prefers-reduced-motion: reduce) {
+  .auth-onda {
+    display: none;
+  }
+  .auth {
+    --a-desloca: 0px;
+  }
+  .auth-form,
+  .auth[data-view="login"] #form-cadastro,
+  .auth[data-view="cadastro"] #form-login {
+    transition:
+      opacity 0.15s ease,
+      visibility 0s linear 0.15s !important;
+  }
+  .auth-form {
+    transition:
+      opacity 0.15s ease,
+      visibility 0s linear 0s !important;
+  }
+  .auth-btn,
+  .auth-campo input,
+  .auth-tipo label {
+    transition: none;
+  }
+}
+
+[hidden] {
+  display: none !important;
+}
+
+/* ---------- Entrar com Google ---------- */
+.auth-divisor {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 16px 0;
+  font-size: 0.85rem;
+  color: var(--a-mudo);
+}
+
+.auth-divisor::before,
+.auth-divisor::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: var(--a-borda);
+}
+
+.auth-btn--google {
+  gap: 12px;
+  background: #ffffff;
+  border-color: var(--a-borda);
+  color: var(--a-marinho);
+}
+
+.auth-btn--google:hover:not(:disabled) {
+  background: var(--a-suave);
+}
+
+.auth-btn--google:disabled {
+  opacity: 0.65;
+  cursor: progress;
+}
+
+.auth-btn--google svg {
+  flex: none;
+  width: 20px;
+  height: 20px;
+}
