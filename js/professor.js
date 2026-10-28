@@ -376,7 +376,15 @@
       ),
       id ? ok(db.from("casos_clinicos").select("*").eq("id", id).single()) : {},
     ]);
-    formulario({
+    const medsAntes = id
+      ? await Medicamentos.carregar(db, "caso_medicamentos", "caso_id", Number(id))
+      : [];
+    const med = Medicamentos.criarSeletor({
+      db,
+      titulo: "Medicamentos sugeridos",
+      inicial: medsAntes,
+    });
+    const janela = formulario({
       titulo: id ? "Editar caso clínico" : "Novo caso clínico",
       botao: id ? "Salvar" : "Criar caso",
       campos: [
@@ -421,15 +429,26 @@
           descricao: v.descricao || null,
           situacao_problema: v.situacao_problema || null,
         };
+        let casoId = id;
         if (id) await ok(db.from("casos_clinicos").update(dados).eq("id", id));
         else {
           const novo = await ok(
             db.from("casos_clinicos").insert(dados).select("id").single(),
           );
-          location.hash = `#/caso/${novo.id}`;
+          casoId = novo.id;
         }
+        await Medicamentos.salvar(
+          db,
+          "caso_medicamentos",
+          "caso_id",
+          casoId,
+          med.valores(),
+          medsAntes.length > 0,
+        );
+        if (!id) location.hash = `#/caso/${casoId}`;
       },
     });
+    Medicamentos.montarNoForm(janela, med);
   }
 
   // Em quanto tempo antes os alunos serão avisados ("nao" = sem aviso; 0 = na hora).
@@ -967,16 +986,35 @@
       db.from("anexos").select("id, titulo, storage_path").eq("caso_id", id),
     ]);
     if (atd.error || anx.error) return falha(atd.error || anx.error);
+    const [medsSug, medsAt] = await Promise.all([
+      Medicamentos.carregar(db, "caso_medicamentos", "caso_id", Number(id)),
+      Medicamentos.carregar(
+        db,
+        "atendimento_medicamentos",
+        "atendimento_id",
+        atd.data.map((x) => x.id),
+      ),
+    ]);
+    const sugSet = Medicamentos.nomesNormalizados(medsSug);
+    const medsDo = (atId) => {
+      const l = medsAt.filter((m) => m.atendimento_id === atId);
+      return l.length
+        ? `<div class="med-bloco"><small>Medicamentos administrados</small>${Medicamentos.htmlLista(l, { sugeridos: sugSet })}</div>`
+        : "";
+    };
     tela.innerHTML = `<div class="pagina"><a class="voltar" href="#/paciente/${k.pacientes.id}">← ${esc(k.pacientes.nome)}</a>
       <h2>${esc(k.titulo)}</h2><p>UC${k.unidades_curriculares.numero} - ${esc(k.unidades_curriculares.nome)}</p>
       <div class="barra-acoes">${btn("editarCaso", "Editar caso", `data-id="${k.id}"`)}${btn("excluirCaso", "Excluir caso", `data-id="${k.id}"`)}</div>
       ${k.pacientes.status === "obito" ? `<p class="aviso"><strong>${esc(k.pacientes.nome)} está em óbito desde ${diaHora(k.pacientes.data_obito)}.</strong> </p>` : ""}
       <div class="cartao"><p class="texto" style="margin:0">${esc(k.descricao) || "Sem descrição."}</p></div>
       <h3>Situação-problema</h3><div class="cartao"><p class="texto" style="margin:0">${esc(k.situacao_problema) || 'Ainda não cadastrada. Use "Editar caso" para escrever.'}</p></div>
+      <h3>Medicamentos sugeridos</h3>
+      ${medsSug.length ? Medicamentos.htmlLista(medsSug) : '<p class="vazio">Nenhum medicamento sugerido. Use "Editar caso" para adicionar.</p>'}
       <h3>Histórico de atendimentos</h3>
-      ${atd.data.length ? '<ul class="lista">' + atd.data.map((a) => `<li><small>${diaHora(a.data_atendimento)}</small><span class="texto">${esc(a.evolucao)}</span></li>`).join("") + "</ul>" : '<p class="vazio">Nenhum atendimento registrado neste caso.</p>'}
+      ${atd.data.length ? '<ul class="lista">' + atd.data.map((a) => `<li><small>${diaHora(a.data_atendimento)}</small><span class="texto">${esc(a.evolucao)}</span>${medsDo(a.id)}</li>`).join("") + "</ul>" : '<p class="vazio">Nenhum atendimento registrado neste caso.</p>'}
       <div style="margin-top:26px">${listaPdfs(anx.data, "caso_id", k.id)}</div>
       <p style="margin-top:20px"><a href="#/uc/${k.unidades_curriculares.id}">Ver indicadores da UC${k.unidades_curriculares.numero}</a></p></div>`;
+    Medicamentos.ligarInfo(tela);
   }
 
   async function listaUCs() {

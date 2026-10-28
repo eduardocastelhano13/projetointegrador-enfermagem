@@ -208,6 +208,20 @@
     const a = id
       ? await ok(db.from("atendimentos").select("*").eq("id", id).single())
       : {};
+    // Medicamentos já registrados (edição) e os sugeridos pelo professor para este caso
+    const casoDoRegistro = id ? a.caso_id : casoId;
+    const [medsAntes, sugeridos] = await Promise.all([
+      id ? Medicamentos.carregar(db, "atendimento_medicamentos", "atendimento_id", id) : [],
+      Medicamentos.carregar(db, "caso_medicamentos", "caso_id", Number(casoDoRegistro)),
+    ]);
+    const med = Medicamentos.criarSeletor({
+      db,
+      titulo: "Medicamentos administrados",
+      inicial: medsAntes,
+      sugestoes: sugeridos,
+      comHorario: true,
+      exigirDose: true,
+    });
     formulario({
       titulo: id ? "Editar meu registro" : "Registrar o que fiz",
       botao: "Salvar",
@@ -226,18 +240,33 @@
           dica: "Descreva os cuidados realizados, observações e a evolução do paciente.",
         },
       ],
+      aoAbrir: (d) => Medicamentos.montarNoForm(d, med),
       aoEnviar: async (v) => {
+        med.validar();
         const dados = {
           data_atendimento: new Date(v.data_atendimento).toISOString(),
           evolucao: v.evolucao,
         };
+        let atId = id;
         if (id) await ok(db.from("atendimentos").update(dados).eq("id", id));
-        else
-          await ok(
+        else {
+          const novo = await ok(
             db
               .from("atendimentos")
-              .insert({ ...dados, caso_id: Number(casoId) }),
+              .insert({ ...dados, caso_id: Number(casoId) })
+              .select("id")
+              .single(),
           );
+          atId = novo.id;
+        }
+        await Medicamentos.salvar(
+          db,
+          "atendimento_medicamentos",
+          "atendimento_id",
+          atId,
+          med.valores(),
+          medsAntes.length > 0,
+        );
       },
     });
   }
@@ -1251,12 +1280,20 @@
         .select("id, titulo, storage_path")
         .or(`caso_id.eq.${id},uc_id.eq.${k.uc_id}`),
     ]);
+    const idsAt = (atd.data || []).map((x) => x.id);
+    const [medsSug, medsAt] = await Promise.all([
+      Medicamentos.carregar(db, "caso_medicamentos", "caso_id", Number(id)),
+      Medicamentos.carregar(db, "atendimento_medicamentos", "atendimento_id", idsAt),
+    ]);
+    const medsDo = (atId) =>
+      Medicamentos.htmlLista(medsAt.filter((m) => m.atendimento_id === atId));
     tela.innerHTML = `<div class="pagina">
       ${barraHoje()}
       <a class="voltar" href="#/paciente/${k.pacientes.id}">← ${esc(k.pacientes.nome)}</a>
       <h2>${esc(k.titulo)}</h2>
       <div class="cartao"><p class="texto" style="margin:0">${esc(k.descricao)}</p></div>
       ${k.situacao_problema ? `<h3>Situação-problema</h3><div class="cartao"><p class="texto" style="margin:0">${esc(k.situacao_problema)}</p></div>` : ""}
+      ${medsSug.length ? `<h3>Medicamentos sugeridos pelo professor</h3>${Medicamentos.htmlLista(medsSug)}` : ""}
       <h3>Indicadores</h3>
       ${(ind.data || []).length ? '<ul class="marcadores">' + ind.data.map((i) => `<li>${esc(i.descricao)}</li>`).join("") + "</ul>" : '<p class="vazio">Sem indicadores cadastrados.</p>'}
       <div class="topo-lista" style="margin-top:26px"><h3 style="margin:0">Histórico de atendimentos</h3>${btn("novoRegistro", "+ Registrar o que fiz", `data-caso="${k.id}"`, "teal")}</div>
@@ -1266,8 +1303,8 @@
             atd.data
               .map((a) =>
                 a.autor_id === perfil.id
-                  ? `<li><div class="linha"><small>${diaHora(a.data_atendimento)} · <b>Registrado por você</b></small><div class="botoes">${btn("editarRegistro", "Editar", `data-id="${a.id}"`)}${btn("excluirRegistro", "Excluir", `data-id="${a.id}"`)}</div></div><span class="texto">${esc(a.evolucao)}</span></li>`
-                  : `<li><small>${diaHora(a.data_atendimento)}</small><span class="texto">${esc(a.evolucao)}</span></li>`,
+                  ? `<li><div class="linha"><small>${diaHora(a.data_atendimento)} · <b>Registrado por você</b></small><div class="botoes">${btn("editarRegistro", "Editar", `data-id="${a.id}"`)}${btn("excluirRegistro", "Excluir", `data-id="${a.id}"`)}</div></div><span class="texto">${esc(a.evolucao)}</span>${medsDo(a.id)}</li>`
+                  : `<li><small>${diaHora(a.data_atendimento)}</small><span class="texto">${esc(a.evolucao)}</span>${medsDo(a.id)}</li>`,
               )
               .join("") +
             "</ul>"
@@ -1275,6 +1312,7 @@
       }
       ${(anx.data || []).length ? '<h3>Materiais de apoio</h3><ul class="lista">' + anx.data.map((a) => `<li><button class="link" data-arquivo="${esc(a.storage_path)}">${esc(a.titulo)} (PDF)</button></li>`).join("") + "</ul>" : ""}</div>`;
     abrirArquivos(tela);
+    Medicamentos.ligarInfo(tela);
   }
 
   async function atividadesPagina(destaque) {

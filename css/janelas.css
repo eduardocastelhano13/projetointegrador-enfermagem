@@ -230,3 +230,234 @@ details summary {
 .detalhe li {
   margin-bottom: 8px;
 }
+
+/* Medicamentos (busca, itens e bula resumida) */
+.med {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px;
+  border: 1px solid var(--linha);
+  border-radius: 12px;
+  background: #fff;
+}
+.med__titulo {
+  font-weight: 700;
+  font-size: 0.92rem;
+}
+.med__titulo small,
+.med__aviso,
+.med__sug > small {
+  font-weight: 400;
+  opacity: 0.7;
+  font-size: 0.82rem;
+}
+.med__busca {
+  position: relative;
+}
+.med__q {
+  width: 100%;
+  padding: 10px 12px;
+  border: 2px solid var(--linha);
+  border-radius: 8px;
+  background: #fff;
+  font: inherit;
+  color: var(--marinho);
+}
+.med__q:focus,
+.med__campos input:focus,
+.med__campos select:focus {
+  outline: none;
+  border-color: var(--azul);
+  box-shadow: 0 0 0 3px rgba(0, 61, 133, 0.12);
+}
+.med__opcoes {
+  position: absolute;
+  z-index: 5;
+  left: 0;
+  right: 0;
+  top: calc(100% + 4px);
+  margin: 0;
+  padding: 4px;
+  list-style: none;
+  max-height: 240px;
+  overflow-y: auto;
+  background: #fff;
+  border: 1px solid var(--linha);
+  border-radius: 10px;
+  box-shadow: var(--sombra-elevada);
+}
+.med__opcoes li {
+  display: flex;
+  flex-direction: column;
+  padding: 8px 10px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+.med__opcoes li small {
+  opacity: 0.65;
+  font-size: 0.8rem;
+}
+.med__opcoes li.ativo,
+.med__opcoes li:hover {
+  background: rgba(15, 123, 108, 0.1);
+}
+.med__livre b {
+  color: var(--teal);
+}
+.med__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 4px;
+}
+.med__chip {
+  border: 1px dashed var(--teal);
+  background: rgba(15, 123, 108, 0.06);
+  color: var(--teal);
+  border-radius: 999px;
+  padding: 4px 12px;
+  font: inherit;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+.med__chip:hover {
+  background: rgba(15, 123, 108, 0.14);
+}
+.med__itens,
+.med-ver {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.med__item {
+  padding: 12px;
+  border: 1px solid var(--linha);
+  border-radius: 10px;
+  background: var(--cartao);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.med__cab {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 10px;
+}
+.med__cab small {
+  display: block;
+  opacity: 0.65;
+  font-size: 0.8rem;
+}
+.med__campos {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 8px;
+}
+.med__campos label {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+.med__campos .med__obs {
+  grid-column: 1 / -1;
+}
+.med__campos input,
+.med__campos select {
+  width: 100%;
+  padding: 8px 10px;
+  border: 2px solid var(--linha);
+  border-radius: 8px;
+  background: #fff;
+  font: inherit;
+  font-weight: 400;
+  color: var(--marinho);
+}
+.med-link {
+  align-self: flex-start;
+  border: 0;
+  background: none;
+  padding: 0;
+  font: inherit;
+  font-size: 0.85rem;
+  color: var(--azul);
+  text-decoration: underline;
+  cursor: pointer;
+}
+.med-link--rem {
+  color: var(--erro);
+}
+.med-fda {
+  margin-top: 6px;
+  padding: 10px 12px;
+  border-left: 3px solid var(--teal);
+  background: rgba(15, 123, 108, 0.06);
+  border-radius: 6px;
+  font-size: 0.85rem;
+  line-height: 1.45;
+}
+.med-fda p {
+  margin: 0 0 6px;
+}
+.med-fda p:last-child {
+  margin: 0;
+}
+.med-fda__fonte {
+  opacity: 0.7;
+  font-size: 0.78rem;
+}
+.med-fda__erro {
+  color: var(--erro);
+  font-weight: 700;
+}
+.med-ver li {
+  padding: 10px 12px;
+  border: 1px solid var(--linha);
+  border-radius: 10px;
+  background: #fff;
+}
+.med-ver__det {
+  opacity: 0.85;
+}
+.med-ver__obs {
+  display: block;
+  opacity: 0.7;
+}
+.med-tag {
+  display: inline-block;
+  padding: 0 8px;
+  border-radius: 999px;
+  background: rgba(15, 123, 108, 0.14);
+  color: var(--teal);
+  font-size: 0.72rem;
+  font-weight: 700;
+  vertical-align: middle;
+}
+.med-bloco {
+  margin-top: 10px;
+}
+.med-bloco > small {
+  display: block;
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+
+.med__anvisa b {
+  color: var(--azul);
+}
+.med__opcoes .med__msg {
+  cursor: default;
+  opacity: 0.75;
+  font-size: 0.88rem;
+}
+.med__opcoes .med__msg--erro {
+  color: var(--erro);
+  opacity: 1;
+  font-weight: 700;
+}
