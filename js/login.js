@@ -89,18 +89,23 @@
       try {
         sessionStorage.removeItem(PENDENTE);
       } catch (e) {}
+      const motivo = retorno.get("error_description") || retorno.get("error");
+      console.error("Retorno do Google com erro:", motivo);
       history.replaceState(null, "", location.pathname);
       msgLogin(
-        "Não foi possível entrar com o Google. O acesso foi cancelado ou recusado.",
+        "Não foi possível entrar com o Google" +
+          (motivo ? ` (${motivo.replace(/\+/g, " ")})` : "") +
+          ".",
         "erro",
       );
     }
-    // Professor que acabou de criar conta pelo Google: cria o perfil de professor
+    // Quem acabou de criar conta pelo Google (aluno ou professor): cria o perfil
     let pendente = null;
     try {
       pendente = sessionStorage.getItem(PENDENTE);
     } catch (e) {}
-    if (pendente) {
+    if (pendente === "1") pendente = "professor"; // valor antigo
+    if (pendente === "professor" || pendente === "aluno") {
       try {
         sessionStorage.removeItem(PENDENTE);
       } catch (e) {}
@@ -109,24 +114,24 @@
       } = await db.auth.getUser();
       if (u) {
         const { data: papel, error } = await db.rpc("criar_perfil_google", {
-          p_tipo: "professor",
+          p_tipo: pendente,
         });
         if (error) {
           console.error("criar_perfil_google:", error);
           await db.auth.signOut();
           return msgLogin(
-            "Não foi possível ativar o acesso de professor" +
+            "Não foi possível criar a conta com o Google" +
               (error.code ? ` (erro ${error.code})` : "") +
+              (error.message ? `: ${error.message}` : "") +
               ". Tente de novo ou fale com a coordenação.",
             "erro",
           );
         }
-        // A função devolve o papel que a conta realmente tem. Se não for professor,
-        // avisa em vez de mandar a pessoa, sem explicação, para o painel do aluno.
-        if (papel !== "professor") {
+        // A função devolve o papel que a conta realmente tem.
+        if (papel !== pendente) {
           await db.auth.signOut();
           return msgLogin(
-            "Esta conta Google já existe como aluno e não pôde virar professor. Fale com a coordenação.",
+            `Esta conta Google já existe como ${papel}. Entre escolhendo ${papel === "professor" ? "Professor" : "Aluno"} ou fale com a coordenação.`,
             "erro",
           );
         }
@@ -353,14 +358,13 @@
   });
 
   /* ---------- Entrar com Google (aluno ou professor) ---------- */
-  const entrarComGoogle = async (botao, msg, professor) => {
+  const entrarComGoogle = async (botao, msg, criarComoTipo) => {
     botao.disabled = true;
     msg("Abrindo o Google…");
-    if (professor) {
-      try {
-        sessionStorage.setItem(PENDENTE, "1");
-      } catch (e) {}
-    }
+    try {
+      if (criarComoTipo) sessionStorage.setItem(PENDENTE, criarComoTipo);
+      else sessionStorage.removeItem(PENDENTE);
+    } catch (e) {}
     const { error } = await db.auth.signInWithOAuth({
       provider: "google",
       options: {
@@ -380,13 +384,13 @@
     }
   };
   $("google-login").addEventListener("click", () =>
-    entrarComGoogle($("google-login"), msgLogin, tipoLogin() === "professor"),
+    entrarComGoogle($("google-login"), msgLogin, null),
   );
   $("google-cadastro").addEventListener("click", () =>
     entrarComGoogle(
       $("google-cadastro"),
       msgCadastro,
-      tipoCadastro() === "professor",
+      tipoCadastro(),
     ),
   );
 

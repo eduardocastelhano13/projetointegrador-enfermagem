@@ -998,3 +998,181 @@ body.entrada .tres > :nth-child(4) {
   color: var(--texto-suave);
   opacity: 0.6;
 }
+
+/* ---------- Desempenho dos alunos (mesmo visual do restante do painel) ---------- */
+.desemp { max-width: 1120px; display: flex; flex-direction: column; gap: 20px; }
+.desemp .estats, .desemp .tres { margin-bottom: 0; }
+.desemp-cab h2 { font-size: 2rem; }
+.desemp-cab p { margin: 6px 0 0; opacity: 0.75; }
+.desemp .cartao h3 { margin: 0 0 16px; font-size: 1.25rem; }
+.desemp .dica { display: block; margin-top: 14px; opacity: 0.7; font-size: 0.82rem; }
+.desemp .estat { background: var(--cartao); border-color: var(--linha); border-radius: 16px; padding: 18px; }
+.desemp .estat > span:last-child { min-width: 0; }
+.desemp .estat b { display: block; font-size: 0.8rem; font-weight: 700; letter-spacing: 0.03em; text-transform: uppercase; opacity: 0.7; }
+.desemp .estat strong { font-family: "League Spartan", sans-serif; font-weight: 800; font-size: 1.9rem; color: var(--marinho); }
+.desemp .estat strong small { font-family: "Sen", Georgia, serif; font-weight: 400; font-size: 0.85rem; opacity: 0.7; }
+.desemp .estat small { display: block; opacity: 0.7; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* Filtros */
+.desemp-filtros { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px 18px; align-items: end; }
+.desemp-filtros .campo2 { margin: 0; }
+.desemp-filtros .campo2 span { font-family: "League Spartan", sans-serif; font-size: 0.95rem; font-weight: 800; color: var(--marinho); }
+.desemp-filtros select { height: 46px; padding: 0 14px; border: 2px solid var(--linha); border-radius: 10px; background: var(--cartao); color: var(--marinho); font: inherit; cursor: pointer; }
+.desemp-filtros select:focus { outline: none; border-color: var(--azul); }
+.desemp-filtros__fim { grid-column: 1 / -1; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+
+/* Gráficos SVG */
+.graf-rolagem { overflow-x: auto; padding-bottom: 4px; }
+.graf { width: 100%; height: auto; display: block; font-family: "Sen", Georgia, serif; color: var(--marinho); }
+.graf .g-linha { stroke: var(--linha); stroke-width: 1; stroke-dasharray: 3 4; }
+.graf .g-txt { font-size: 11px; fill: var(--marinho); opacity: 0.65; }
+.graf .g-val { font-family: "League Spartan", sans-serif; font-size: 13px; font-weight: 800; fill: var(--marinho); }
+.graf .g-barra rect { transition: opacity 0.2s ease; }
+.graf .g-barra:hover rect { opacity: 0.8; }
+.graf .g-ponto { fill: var(--cartao); stroke-width: 3; }
+.graf-legenda { display: flex; gap: 18px; flex-wrap: wrap; font-size: 0.85rem; margin-top: 8px; }
+.graf-legenda i { display: inline-block; width: 22px; height: 0; border-top: 4px solid var(--c); border-radius: 4px; margin-right: 8px; vertical-align: middle; }
+.graf-legenda i.trac { border-top-style: dashed; border-top-width: 3px; }
+
+/* Barras horizontais */
+.barras-h { list-style: none; margin: 0; padding: 0; display: grid; gap: 14px; }
+.barras-h__topo { display: flex; justify-content: space-between; gap: 10px; font-size: 0.92rem; }
+.barras-h__topo b { font-family: "League Spartan", sans-serif; font-weight: 800; }
+.barras-h__trilho { height: 10px; border-radius: 99px; background: rgba(10, 46, 91, 0.08); overflow: hidden; margin: 5px 0 3px; }
+.barras-h__trilho i { display: block; height: 100%; border-radius: 99px; }
+.barras-h small { opacity: 0.7; }
+
+/* Um aluno por linha */
+.rank { display: grid; gap: 6px; }
+.rank__linha { display: grid; grid-template-columns: 34px minmax(130px, 1.1fr) minmax(120px, 2fr) 48px; align-items: center; gap: 12px; width: 100%; padding: 8px 12px; border: 1px solid transparent; border-radius: 12px; background: transparent; color: inherit; font: inherit; text-align: left; cursor: pointer; transition: background 0.2s ease, border-color 0.2s ease, transform 0.2s ease; }
+.rank__linha:hover { background: rgba(10, 46, 91, 0.04); border-color: var(--linha); transform: translateX(3px); }
+.rank__linha .avatar { width: 34px; height: 34px; font-size: 0.9rem; }
+.rank__nome { min-width: 0; display: flex; flex-direction: column; line-height: 1.25; }
+.rank__nome b { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.rank__nome small { opacity: 0.65; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.rank__barra { position: relative; height: 12px; border-radius: 99px; background: rgba(10, 46, 91, 0.08); }
+.rank__barra i { position: absolute; inset: 0 auto 0 0; border-radius: 99px; }
+.rank__barra em { position: absolute; top: -4px; bottom: -4px; width: 0; border-left: 2px dashed var(--marinho); opacity: 0.55; }
+.rank__pct { font-family: "League Spartan", sans-serif; font-weight: 800; text-align: right; }
+.rank__linha.sem { opacity: 0.6; }
+
+/* Mapa de calor alunos x provas */
+.mapa { width: 100%; border-collapse: separate; border-spacing: 0 4px; font-size: 0.9rem; }
+.mapa th { font-family: "League Spartan", sans-serif; font-size: 0.82rem; font-weight: 800; text-align: center; padding: 0 4px 6px; white-space: nowrap; }
+.mapa th:first-child, .mapa td:first-child { text-align: left; position: sticky; left: 0; background: var(--cartao); z-index: 1; padding-right: 12px; }
+.mapa td { text-align: center; padding: 0 3px; }
+.mapa__aluno, .mapa__col { border: 0; background: none; font: inherit; color: var(--azul); cursor: pointer; padding: 2px 0; text-align: left; white-space: nowrap; }
+.mapa__col { font-weight: 800; text-align: center; }
+.mapa__aluno:hover, .mapa__col:hover { text-decoration: underline; }
+.mapa .cel { display: inline-flex; align-items: center; justify-content: center; min-width: 46px; height: 32px; border-radius: 8px; font-family: "League Spartan", sans-serif; font-weight: 800; color: var(--c); background: color-mix(in srgb, var(--c) 14%, #fff); }
+.mapa .cel.geral { background: var(--c); color: #fff; }
+.mapa .cel.vazio-cel { background: transparent; color: var(--marinho); opacity: 0.35; font-weight: 400; border: 1px dashed var(--linha); }
+
+/* Listas de questões */
+.piores { margin: 0; padding-left: 20px; display: grid; gap: 16px; }
+.piores p { margin: 3px 0; }
+.piores small { opacity: 0.75; }
+.piores__topo { display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+.questao-res { padding: 16px 18px; border: 1px solid var(--linha); border-left: 5px solid var(--teal); border-radius: 12px; background: var(--cartao); }
+.questao-res.erro { border-left-color: var(--erro); }
+.questao-res__topo { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.questao-res__topo b { font-family: "League Spartan", sans-serif; font-size: 1.05rem; }
+.questao-res__topo small { margin-left: auto; opacity: 0.7; }
+.questao-res p { margin: 8px 0 10px; }
+.alts-res { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.alts-res li { display: grid; grid-template-columns: 26px 1fr auto; gap: 8px; align-items: center; padding: 8px 12px; border: 1px solid var(--linha); border-radius: 10px; }
+.alts-res li.certa { background: #e3f1ee; border-color: var(--teal); }
+.alts-res li.errada { background: #fde8e6; border-color: var(--erro); }
+.alts-res li i { font-style: normal; font-size: 0.82rem; font-weight: 700; }
+
+@media (max-width: 720px) {
+  .desemp-filtros { grid-template-columns: 1fr; }
+  .rank__linha { grid-template-columns: 34px 1fr 44px; }
+  .rank__barra { grid-column: 2 / 4; grid-row: 2; }
+}
+
+/* ---------- Gráfico "Acerto da turma em cada prova" ---------- */
+.desemp .cartao.gp-card {
+  background: #fff;
+  border: 1px solid rgba(13, 49, 91, 0.06);
+  border-radius: 20px;
+  padding: 26px 28px 24px;
+  box-shadow: 0 10px 30px rgba(13, 49, 91, 0.07);
+}
+.desemp .gp-card h3 { color: #0d315b; font-size: 1.3rem; margin-bottom: 22px; }
+
+.gp { --gp-altura: 230px; --gp-eixo: 46px; }
+.gp__rolagem { overflow-x: auto; padding-top: 30px; padding-bottom: 4px; -webkit-overflow-scrolling: touch; }
+.gp__corpo {
+  position: relative;
+  min-width: calc(var(--gp-eixo) + var(--n) * 76px);
+  padding-left: var(--gp-eixo);
+  margin-bottom: 34px;
+}
+.gp__grade { position: absolute; left: 0; right: 0; top: 0; height: var(--gp-altura); pointer-events: none; }
+.gp__linha { position: absolute; left: 0; right: 0; height: 0; border-top: 1px solid rgba(13, 49, 91, 0.08); }
+.gp__linha:last-child { border-top-color: rgba(13, 49, 91, 0.16); }
+.gp__linha span {
+  position: absolute; left: 0; top: -9px; width: calc(var(--gp-eixo) - 12px);
+  font-size: 0.72rem; line-height: 18px; color: #0d315b; opacity: 0.5; text-align: right;
+}
+.gp__colunas { position: relative; display: flex; justify-content: space-around; gap: 14px; height: var(--gp-altura); padding: 0 10px; }
+.gp__col { position: relative; flex: 1 1 0; max-width: 84px; min-width: 0; height: 100%; display: flex; justify-content: center; }
+.gp__barra {
+  position: absolute; bottom: 0; left: 50%; transform: translateX(-50%);
+  width: min(56%, 46px); min-width: 26px;
+  height: calc(var(--v) * 1%); min-height: 3px;
+  border-radius: 10px 10px 3px 3px;
+  background: linear-gradient(180deg, #14937f 0%, #108577 55%, #0e7568 100%);
+  transition: filter 0.2s ease;
+  animation: gp-sobe 0.9s cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation-delay: calc(var(--i) * 90ms + 120ms);
+}
+.gp__col:hover .gp__barra { filter: brightness(1.08) saturate(1.1); }
+.gp__val {
+  position: absolute; left: 50%; transform: translateX(-50%);
+  bottom: calc(var(--v) * 1% + 8px);
+  font-family: "Sen", Georgia, serif; font-weight: 600; font-size: 1.05rem; letter-spacing: 0.01em;
+  color: #0d315b; white-space: nowrap; line-height: 1;
+  animation: gp-sobe-val 0.9s cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation-delay: calc(var(--i) * 90ms + 120ms);
+}
+.gp__rot {
+  position: absolute; top: calc(100% + 12px); left: 50%; transform: translateX(-50%);
+  width: 100%; text-align: center; font-size: 0.78rem; line-height: 1.25;
+  color: #0d315b; opacity: 0.7; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+@keyframes gp-sobe { from { height: 0; } }
+@keyframes gp-sobe-val { from { bottom: 8px; opacity: 0; } }
+
+@media (max-width: 720px) {
+  .desemp .cartao.gp-card { padding: 20px 16px 18px; border-radius: 18px; }
+  .gp { --gp-altura: 200px; --gp-eixo: 40px; }
+  .gp__corpo { min-width: calc(var(--gp-eixo) + var(--n) * 64px); }
+  .gp__val { font-size: 0.95rem; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .gp__barra, .gp__val { animation: none; }
+}
+
+/* ---------- Gráfico de evolução (linhas) ---------- */
+.gl { width: 100%; }
+.gl__rolagem { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+.gl-svg { display: block; max-width: none; }
+.gl-svg .gl-linha { stroke: rgba(13, 49, 91, 0.1); stroke-width: 1; stroke-dasharray: 5 6; }
+.gl-svg .gl-linha.base { stroke: rgba(13, 49, 91, 0.16); stroke-dasharray: none; }
+.gl-svg .gl-y { font-size: 14px; fill: #5b7399; }
+.gl-svg .gl-x { font-size: 14px; fill: #0d315b; }
+.gl-svg .gl-val { font-family: "League Spartan", sans-serif; font-weight: 800; font-size: 18px; fill: #0d315b; }
+.gl-svg .gl-ponto { fill: #fff; }
+.gl-svg.gl-anima .gl-val { opacity: 0; animation: gl-aparece 0.5s ease forwards; }
+@keyframes gl-aparece { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+.gl-legenda { display: flex; justify-content: center; gap: 28px; flex-wrap: wrap; margin-top: 14px; font-size: 1rem; color: #0d315b; }
+.gl-legenda i { display: inline-block; width: 34px; height: 0; border-top: 4px solid var(--c); border-radius: 4px; margin-right: 10px; vertical-align: middle; }
+.gl-legenda i.trac { border-top-style: dashed; border-top-width: 3px; }
+@media (max-width: 720px) {
+  .gl-svg .gl-y, .gl-svg .gl-x { font-size: 12px; }
+  .gl-svg .gl-val { font-size: 15px; }
+  .gl-legenda { font-size: 0.9rem; gap: 18px; }
+}
+@media (prefers-reduced-motion: reduce) { .gl-svg.gl-anima .gl-val { animation: none; opacity: 1; } }

@@ -26,6 +26,7 @@
     sair: '<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/>',
     coracao:
       '<path d="M12 20s-8-5-8-11a4.5 4.5 0 0 1 8-2.8A4.5 4.5 0 0 1 20 9c0 6-8 11-8 11z"/><path d="M6 12h3l1.5-3 3 6 1.5-3h3"/>',
+    grafico: '<path d="M4 20V4M4 20h16M8 16v-4M12 16V8M16 16v-6"/>',
     monitor:
       '<rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4M7 12l3-3 3 2 4-4"/>',
     estetoscopio:
@@ -743,6 +744,7 @@
       ["casos", "casos", "Casos clínicos", "Casos"],
       ["ucs", "ucs", "Unidades curriculares", "Unidades"],
       ["alunos", "alunos", "Alunos", "Alunos"],
+      ["desempenho", "grafico", "Desempenho", "Notas"],
       ["monitoramento", "monitor", "Monitoramento", "Monitor"],
     ];
     const atual =
@@ -1725,6 +1727,479 @@
     tela.innerHTML = `<div class="pagina"><h2>Alunos</h2>${r.data.length ? '<ul class="lista">' + r.data.map((a) => `<li><b>${esc(a.nome)}</b><small>Cadastrado em ${dia(a.created_at)}</small></li>`).join("") + "</ul>" : '<p class="vazio">Nenhum aluno cadastrado ainda.</p>'}</div>`;
   }
 
+  // ---------- Desempenho dos alunos (gráficos de acertos e erros) ----------
+  const pctDe = (r) => (r.total ? (r.acertos / r.total) * 100 : 0);
+  const fmtPct = (n) => `${Math.round(n)}%`;
+  const corPct = (p) =>
+    p >= 70 ? "var(--teal)" : p >= 50 ? "var(--ouro)" : "var(--erro)";
+  const curto = (t, n = 14) =>
+    String(t ?? "").length > n ? String(t).slice(0, n - 1) + "…" : String(t ?? "");
+  const media = (v) => (v.length ? v.reduce((a, b) => a + b, 0) / v.length : null);
+  const semTeste = (t) => String(t ?? "").replace(/^\[TESTE\]\s*/, "");
+
+  // Gráfico de barras verticais (percentuais em destaque): itens = [{ rot, valor (0-100), dica }]
+  function graficoBarras(itens) {
+    const escala = [100, 75, 50, 25, 0];
+    const grade = escala
+      .map(
+        (g) =>
+          `<div class="gp__linha" style="bottom:${g}%"><span>${g}%</span></div>`,
+      )
+      .join("");
+    const colunas = itens
+      .map((it, i) => {
+        const v = Math.max(0, Math.min(100, Number(it.valor) || 0));
+        return `<div class="gp__col" style="--v:${v.toFixed(1)};--i:${i}" role="listitem" aria-label="${esc(`${it.rot}: ${fmtPct(v)}`)}" title="${esc(it.dica || it.rot)}"><span class="gp__val">${fmtPct(v)}</span><span class="gp__barra"></span><span class="gp__rot">${esc(curto(semTeste(it.rot), 16))}</span></div>`;
+      })
+      .join("");
+    return `<div class="gp"><div class="gp__rolagem"><div class="gp__corpo" style="--n:${itens.length}"><div class="gp__grade" aria-hidden="true">${grade}</div><div class="gp__colunas" role="list">${colunas}</div></div></div></div>`;
+  }
+
+  // Gráfico de linhas (evolução): series = [{ nome, cor, pontos: [{ rot, valor, dica }] }].
+  // É desenhado no tamanho real do cartão (em pixels), para o texto não esticar nem encolher.
+  const GL_DADOS = new Map();
+  let glSeq = 0;
+  function graficoLinhas(series) {
+    const id = "gl" + ++glSeq;
+    GL_DADOS.set(id, series);
+    const legenda = series
+      .map(
+        (s, si) =>
+          `<span><i class="${si ? "trac" : ""}" style="--c:${s.cor}"></i>${esc(s.nome)}</span>`,
+      )
+      .join("");
+    return `<div class="gl" data-gl="${id}" role="img" aria-label="Evolução do percentual de acertos prova a prova"></div><div class="gl-legenda">${legenda}</div>`;
+  }
+
+  function desenharLinha(el, series, animar) {
+    const n = series[0].pontos.length;
+    const compacto = window.innerWidth <= 720;
+    const W = Math.max(el.clientWidth, n * 76 + 76),
+      H = compacto ? 270 : 320,
+      padL = compacto ? 46 : 56,
+      padR = 18,
+      padT = 28,
+      padB = 46;
+    const plotW = W - padL - padR,
+      plotH = H - padT - padB,
+      banda = plotW / n;
+    const y = (v) => padT + plotH * (1 - v / 100);
+    const x = (i) => padL + banda * (i + 0.5);
+    const uid = el.dataset.gl;
+    const reduzir = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const anima = animar && !reduzir;
+
+    const grade = [0, 25, 50, 75, 100]
+      .map(
+        (g) =>
+          `<line x1="${padL}" x2="${W - padR}" y1="${y(g)}" y2="${y(g)}" class="gl-linha ${g === 0 ? "base" : ""}"/><text x="${padL - 12}" y="${y(g) + 5}" text-anchor="end" class="gl-y">${g}%</text>`,
+      )
+      .join("");
+    const eixoY = `<line x1="${padL}" x2="${padL}" y1="${padT}" y2="${y(0)}" class="gl-linha base"/>`;
+
+    const maxChars = Math.max(6, Math.floor(banda / 8.4));
+    const eixoX = series[0].pontos
+      .map(
+        (p, i) =>
+          `<text x="${x(i)}" y="${H - 14}" text-anchor="middle" class="gl-x"><title>${esc(p.rot)}</title>${esc(curto(semTeste(p.rot), maxChars))}</text>`,
+      )
+      .join("");
+
+    const camadas = series
+      .map((s, si) => {
+        const pts = s.pontos
+          .map((p, i) => (p.valor === null ? null : [x(i), y(p.valor), p]))
+          .filter(Boolean);
+        if (!pts.length) return "";
+        const d = pts.map((q, i) => `${i ? "L" : "M"}${q[0].toFixed(1)},${q[1].toFixed(1)}`).join(" ");
+        const area =
+          !si && pts.length > 1
+            ? `<path d="${d} L${pts[pts.length - 1][0].toFixed(1)},${y(0)} L${pts[0][0].toFixed(1)},${y(0)} Z" fill="url(#${uid}-g)"/>`
+            : "";
+        const linha = `<path d="${d}" fill="none" stroke="${s.cor}" stroke-width="${si ? 3 : 4.5}" ${si ? 'stroke-dasharray="9 7"' : ""} stroke-linecap="round" stroke-linejoin="round"/>`;
+        const bolas = pts
+          .map(
+            (q) =>
+              `<circle cx="${q[0].toFixed(1)}" cy="${q[1].toFixed(1)}" r="${si ? 6 : 8.5}" class="gl-ponto" stroke="${s.cor}" stroke-width="${si ? 3 : 4.5}"><title>${esc(q[2].dica || "")}</title></circle>`,
+          )
+          .join("");
+        return { base: area + linha + bolas, pts, si };
+      })
+      .filter(Boolean);
+    const rotulos = camadas
+      .filter((c) => c.si === 0)
+      .map((c) =>
+        c.pts
+          .map(
+            (q, k) =>
+              `<text x="${q[0].toFixed(1)}" y="${(q[2].valor > 88 ? q[1] + 30 : q[1] - 16).toFixed(1)}" text-anchor="middle" class="gl-val" ${anima ? `style="animation-delay:${500 + k * 110}ms"` : ""}>${fmtPct(q[2].valor)}</text>`,
+          )
+          .join(""),
+      )
+      .join("");
+
+    el.innerHTML = `<div class="gl__rolagem"><svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" class="gl-svg ${anima ? "gl-anima" : ""}" style="font-family:'Sen',Georgia,serif">
+      <defs>
+        <linearGradient id="${uid}-g" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#1f6fd0" stop-opacity=".22"/><stop offset="100%" stop-color="#1f6fd0" stop-opacity=".03"/></linearGradient>
+        <clipPath id="${uid}-c"><rect x="0" y="0" width="${anima ? 0 : W}" height="${H}">${anima ? `<animate attributeName="width" from="0" to="${W}" dur="1s" begin="0s" fill="freeze" calcMode="spline" keyTimes="0;1" keySplines="0.16 1 0.3 1"/>` : ""}</rect></clipPath>
+      </defs>
+      ${grade}${eixoY}${eixoX}
+      <g clip-path="url(#${uid}-c)">${camadas.slice().reverse().map((c) => c.base).join("")}</g>
+      ${rotulos}
+    </svg></div>`;
+  }
+
+  function montarLinhas() {
+    tela.querySelectorAll(".gl").forEach((el) => {
+      const series = GL_DADOS.get(el.dataset.gl);
+      if (!series) return;
+      desenharLinha(el, series, true);
+      if (window.ResizeObserver) {
+        let w = el.clientWidth;
+        new ResizeObserver(() => {
+          if (el.clientWidth !== w) {
+            w = el.clientWidth;
+            desenharLinha(el, series, false);
+          }
+        }).observe(el);
+      }
+    });
+  }
+
+  // Barras horizontais em HTML: itens = [{ rot, valor, sub }]
+  const barrasH = (itens, { invertida = false } = {}) =>
+    `<ul class="barras-h">${itens
+      .map((it) => {
+        const cor = invertida
+          ? it.valor >= 50 ? "var(--erro)" : it.valor >= 30 ? "var(--ouro)" : "var(--teal)"
+          : corPct(it.valor);
+        return `<li><div class="barras-h__topo"><span>${esc(it.rot)}</span><b style="color:${cor}">${fmtPct(it.valor)}</b></div><div class="barras-h__trilho"><i style="width:${Math.max(it.valor, 2)}%;background:${cor}"></i></div>${it.sub ? `<small>${esc(it.sub)}</small>` : ""}</li>`;
+      })
+      .join("")}</ul>`;
+
+  // Um aluno por linha (todos aparecem). itens = [{ id, nome, valor|null, sub }]
+  const rankAlunos = (itens, mediaTurma) =>
+    `<div class="rank">${itens
+      .map(
+        (it) =>
+          `<button type="button" class="rank__linha ${it.valor === null ? "sem" : ""}" data-aluno="${it.id}" title="Ver ${esc(it.nome)}"><span class="avatar f" aria-hidden="true">${esc(it.nome[0])}</span><span class="rank__nome"><b>${esc(it.nome)}</b><small>${esc(it.sub || "")}</small></span><span class="rank__barra">${it.valor === null ? "" : `<i style="width:${Math.max(it.valor, 2)}%;background:${corPct(it.valor)}"></i>`}${mediaTurma === null ? "" : `<em style="left:${mediaTurma}%" title="Média da turma: ${fmtPct(mediaTurma)}"></em>`}</span><b class="rank__pct" style="color:${it.valor === null ? "inherit" : corPct(it.valor)}">${it.valor === null ? "—" : fmtPct(it.valor)}</b></button>`,
+      )
+      .join("")}</div><small class="dica">A linha tracejada em cada barra marca a média da turma. Clique em um aluno para ver os detalhes.</small>`;
+
+  async function carregarDesempenho() {
+    const [ativ, resp, alunosL, qs] = await Promise.all([
+      ok(
+        db
+          .from("atividades")
+          .select("id, titulo, tipo, formato, data_limite, unidades_curriculares(numero, nome)")
+          .eq("formato", "multipla_escolha")
+          .order("data_limite"),
+      ),
+      ok(db.from("respostas_alunos").select("*").order("enviado_em")),
+      ok(db.from("perfis").select("id, nome").eq("papel", "aluno").order("nome")),
+      ok(
+        db
+          .from("questoes")
+          .select("id, atividade_id, enunciado, alternativas, ordem")
+          .order("ordem")
+          .order("id"),
+      ),
+    ]);
+    const atPor = Object.fromEntries(ativ.map((a) => [a.id, a]));
+    const qPor = Object.fromEntries(qs.map((q) => [q.id, q]));
+    const rs = resp.filter((r) => atPor[r.atividade_id]);
+    const ucDe = (a) =>
+      a.unidades_curriculares
+        ? `UC${a.unidades_curriculares.numero}${a.unidades_curriculares.nome ? " · " + curto(a.unidades_curriculares.nome, 34) : ""}`
+        : "Sem unidade";
+    return { ativ, atPor, qs, qPor, rs, alunosL, ucDe };
+  }
+
+  // Tela única de desempenho: filtros (aluno e prova) + gráficos que mudam conforme a escolha
+  async function desempenho(preAluno = "") {
+    let D;
+    try {
+      D = await carregarDesempenho();
+    } catch (e) {
+      return falha(e);
+    }
+    const { ativ, atPor, qs, qPor, rs, alunosL, ucDe } = D;
+    const cab = `<header class="desemp-cab"><h2>Desempenho dos alunos</h2><p>Acompanhe acertos, erros e dificuldades nas provas e atividades de múltipla escolha.</p></header>`;
+    if (!rs.length) {
+      tela.innerHTML = `<div class="pagina desemp">${cab}<section class="cartao"><p class="vazio">Ainda não há respostas de provas ou atividades de múltipla escolha. Quando os alunos responderem, os gráficos aparecem aqui.</p></section></div>`;
+      return;
+    }
+
+    const provas = ativ.filter((a) => rs.some((r) => r.atividade_id === a.id));
+    const nomeDe = Object.fromEntries(alunosL.map((a) => [a.id, a.nome]));
+    const respDe = (alunoId, ativId) =>
+      rs.find((r) => r.aluno_id === alunoId && r.atividade_id === ativId);
+    const mediaProva = (ativId) =>
+      media(rs.filter((r) => r.atividade_id === ativId).map(pctDe));
+    const geralDe = (lista) => {
+      const a = lista.reduce((t, x) => t + x.acertos, 0),
+        b = lista.reduce((t, x) => t + x.total, 0);
+      return b ? (a / b) * 100 : null;
+    };
+    const mediaTurma = geralDe(rs);
+
+    // acerto da turma em cada questão
+    const stQ = {};
+    rs.forEach((r) =>
+      (r.detalhe || []).forEach((x) => {
+        const s = (stQ[x.q] = stQ[x.q] || { ac: 0, tot: 0, esc: {} });
+        s.tot++;
+        if (x.acertou) s.ac++;
+        else s.esc[x.escolhida] = (s.esc[x.escolhida] || 0) + 1;
+      }),
+    );
+    const pctQ = (qid) => (stQ[qid] && stQ[qid].tot ? (stQ[qid].ac / stQ[qid].tot) * 100 : null);
+
+    const F = {
+      aluno: alunosL.some((a) => a.id === preAluno) ? preAluno : "",
+      prova: "",
+    };
+
+    const kpi = (cor, icone, titulo, valor, sub) =>
+      `<div class="estat" style="--cor:${cor}"><span class="bolha">${ico(icone)}</span><span><b>${titulo}</b><strong>${valor}</strong><small>${sub}</small></span></div>`;
+    const cartao = (titulo, corpo, extra = "") =>
+      `<section class="cartao ${extra}"><h3>${titulo}</h3>${corpo}</section>`;
+
+    // ---- 1) Turma inteira, todas as provas ----
+    function corpoTurma() {
+      const linhas = alunosL.map((al) => {
+        const r = rs.filter((x) => x.aluno_id === al.id);
+        return { al, r, valor: geralDe(r) };
+      });
+      const abaixo = linhas.filter((l) => l.valor !== null && l.valor < 60).length;
+      const comResp = linhas.filter((l) => l.r.length).length;
+      const ordenados = [...linhas].sort(
+        (a, b) => (b.valor ?? -1) - (a.valor ?? -1) || a.al.nome.localeCompare(b.al.nome),
+      );
+
+      const stUC = {};
+      rs.forEach((r) => {
+        const k = ucDe(atPor[r.atividade_id]);
+        const s = (stUC[k] = stUC[k] || { ac: 0, tot: 0 });
+        s.ac += r.acertos;
+        s.tot += r.total;
+      });
+      const ucs = Object.entries(stUC)
+        .map(([k, s]) => ({
+          rot: k,
+          valor: s.tot ? ((s.tot - s.ac) / s.tot) * 100 : 0,
+          sub: `${s.tot - s.ac} erros em ${s.tot} questões`,
+        }))
+        .sort((a, b) => b.valor - a.valor);
+      const piores = Object.entries(stQ)
+        .filter(([q]) => qPor[q])
+        .map(([q, s]) => ({ q: qPor[q], s, erro: ((s.tot - s.ac) / s.tot) * 100 }))
+        .sort((a, b) => b.erro - a.erro || b.s.tot - a.s.tot)
+        .slice(0, 5);
+
+      const cel = (v) =>
+        v === null
+          ? '<span class="cel vazio-cel">—</span>'
+          : `<span class="cel" style="--c:${corPct(v)}">${Math.round(v)}</span>`;
+      const mapa = `<div class="monit-rolagem"><table class="mapa"><thead><tr><th>Aluno</th>${provas
+        .map(
+          (p) =>
+            `<th><button type="button" class="mapa__col" data-prova="${p.id}" title="${esc(p.titulo)}">${esc(curto(semTeste(p.titulo).replace(/^(Prova|Atividade) /, "$1 "), 12))}</button></th>`,
+        )
+        .join("")}<th>Geral</th></tr></thead><tbody>${ordenados
+        .map(
+          (l) =>
+            `<tr><td><button type="button" class="mapa__aluno" data-aluno="${l.al.id}">${esc(l.al.nome)}</button></td>${provas
+              .map((p) => {
+                const r = respDe(l.al.id, p.id);
+                return `<td>${cel(r ? pctDe(r) : null)}</td>`;
+              })
+              .join("")}<td>${l.valor === null ? cel(null) : `<span class="cel geral" style="--c:${corPct(l.valor)}">${Math.round(l.valor)}</span>`}</td></tr>`,
+        )
+        .join("")}</tbody></table></div><small class="dica">Percentual de acertos de cada aluno em cada prova. Clique no nome do aluno ou no título da prova para filtrar.</small>`;
+
+      return `<section class="estats">
+          ${kpi("#0F7B6C", "grafico", "Acerto geral da turma", fmtPct(mediaTurma), `${rs.length} resposta(s) enviada(s)`)}
+          ${kpi("#1F5FA8", "casos", "Provas com respostas", provas.length, "Múltipla escolha")}
+          ${kpi("#D9962B", "alunos", "Alunos que responderam", `${comResp} <small>de ${alunosL.length}</small>`, "Pelo menos uma prova")}
+          ${kpi(abaixo ? "#B3261E" : "#0F7B6C", "monitor", "Abaixo de 60%", abaixo, "Precisam de atenção")}
+        </section>
+        ${cartao("Acerto da turma em cada prova", graficoBarras(provas.map((p) => ({ rot: p.titulo, valor: mediaProva(p.id), dica: `${p.titulo}: ${fmtPct(mediaProva(p.id))} de acertos` }))), "gp-card")}
+        ${cartao(`Todos os alunos (${alunosL.length})`, rankAlunos(ordenados.map((l) => ({ id: l.al.id, nome: l.al.nome, valor: l.valor, sub: l.r.length ? `${l.r.length} prova(s) feita(s)` : "Nenhuma prova respondida" })), mediaTurma))}
+        ${cartao("Alunos × provas", mapa)}
+        <div class="tres desemp-duas">
+          ${cartao("Onde a turma mais erra", barrasH(ucs, { invertida: true }) + '<small class="dica">Percentual de questões erradas em cada unidade curricular.</small>')}
+          ${cartao("Questões mais erradas", `<ol class="piores">${piores.map((p) => `<li><div class="piores__topo"><b style="color:var(--erro)">${fmtPct(p.erro)} erraram</b><small>${esc(curto(semTeste((atPor[p.q.atividade_id] || {}).titulo), 30))}</small></div><p>${esc(curto(p.q.enunciado, 130))}</p></li>`).join("")}</ol>`)}
+        </div>`;
+    }
+
+    // ---- 2) Turma inteira, uma prova ----
+    function corpoTurmaProva(a) {
+      const r = rs.filter((x) => x.atividade_id === a.id);
+      const valores = r.map(pctDe);
+      const m = media(valores);
+      const itens = alunosL
+        .map((al) => {
+          const x = respDe(al.id, a.id);
+          return {
+            id: al.id,
+            nome: al.nome,
+            valor: x ? pctDe(x) : null,
+            sub: x ? `${x.acertos} acerto(s) · ${x.total - x.acertos} erro(s) · nota ${fmtNota(x.nota)}` : "Não respondeu",
+          };
+        })
+        .sort((x, y) => (y.valor ?? -1) - (x.valor ?? -1) || x.nome.localeCompare(y.nome));
+      const questoes = qs.filter((q) => q.atividade_id === a.id);
+      const linhasQ = questoes.map((q, i) => ({
+        rot: `Q${i + 1} · ${curto(q.enunciado, 70)}`,
+        valor: pctQ(q.id) ?? 0,
+        sub: stQ[q.id] ? `${stQ[q.id].ac} de ${stQ[q.id].tot} alunos acertaram` : "Sem respostas",
+      }));
+      return `<section class="estats">
+          ${kpi("#0F7B6C", "grafico", "Média da turma", fmtPct(m), semTeste(a.titulo))}
+          ${kpi("#1F5FA8", "alunos", "Responderam", `${r.length} <small>de ${alunosL.length}</small>`, `${alunosL.length - r.length} ainda não responderam`)}
+          ${kpi("#D9962B", "casos", "Maior acerto", fmtPct(Math.max(...valores)), "Melhor aluno da prova")}
+          ${kpi("#B3261E", "monitor", "Menor acerto", fmtPct(Math.min(...valores)), "Quem mais precisa de apoio")}
+        </section>
+        ${cartao(`Todos os alunos nesta prova (${alunosL.length})`, rankAlunos(itens, m))}
+        ${cartao("Acerto por questão", barrasH(linhasQ) + '<small class="dica">Quanto menor a barra, mais difícil foi a questão para a turma.</small>')}`;
+    }
+
+    // ---- 3) Um aluno, todas as provas ----
+    function corpoAluno(al) {
+      const meus = rs.filter((r) => r.aluno_id === al.id);
+      if (!meus.length)
+        return cartao(esc(al.nome), '<p class="vazio">Este aluno ainda não respondeu nenhuma prova ou atividade de múltipla escolha.</p>');
+      const ordem = provas.filter((p) => meus.some((r) => r.atividade_id === p.id));
+      const pontos = ordem.map((p) => {
+        const r = respDe(al.id, p.id);
+        return { rot: p.titulo, valor: pctDe(r), dica: `${p.titulo}: ${fmtPct(pctDe(r))} (${r.acertos}/${r.total})` };
+      });
+      const turma = ordem.map((p) => ({ rot: p.titulo, valor: mediaProva(p.id), dica: `Média da turma em ${p.titulo}: ${fmtPct(mediaProva(p.id))}` }));
+      const geral = geralDe(meus);
+      const melhor = pontos.reduce((m, p) => (p.valor > m.valor ? p : m)),
+        pior = pontos.reduce((m, p) => (p.valor < m.valor ? p : m));
+      const stUC = {};
+      meus.forEach((r) => {
+        const k = ucDe(atPor[r.atividade_id]);
+        const s = (stUC[k] = stUC[k] || { ac: 0, tot: 0 });
+        s.ac += r.acertos;
+        s.tot += r.total;
+      });
+      const ucs = Object.entries(stUC)
+        .map(([k, s]) => ({ rot: k, valor: s.tot ? (s.ac / s.tot) * 100 : 0, sub: `${s.ac} acertos em ${s.tot} questões` }))
+        .sort((a, b) => a.valor - b.valor);
+      const erradas = [];
+      meus.forEach((r) =>
+        (r.detalhe || []).forEach((x) => {
+          if (!x.acertou && qPor[x.q]) erradas.push({ x, q: qPor[x.q], a: atPor[r.atividade_id] });
+        }),
+      );
+      const alt = (q, i) =>
+        i === null || i === undefined || q.alternativas[i] === undefined
+          ? "—"
+          : `${LETRAS[i]}) ${esc(curto(q.alternativas[i], 90))}`;
+      return `<section class="estats">
+          ${kpi("#0F7B6C", "grafico", "% de acertos", fmtPct(geral), `Turma: ${fmtPct(mediaTurma)}`)}
+          ${kpi("#1F5FA8", "casos", "Provas feitas", `${ordem.length} <small>de ${provas.length}</small>`, "Múltipla escolha")}
+          ${kpi("#D9962B", "alunos", "Melhor prova", fmtPct(melhor.valor), esc(curto(semTeste(melhor.rot), 24)))}
+          ${kpi("#B3261E", "monitor", "Pior prova", fmtPct(pior.valor), esc(curto(semTeste(pior.rot), 24)))}
+        </section>
+        ${cartao("Evolução prova a prova", graficoLinhas([{ nome: al.nome.split(" ")[0], cor: "#003d85", pontos }, { nome: "Média da turma", cor: "#119a5b", pontos: turma }]), "gp-card")}
+        <div class="tres desemp-duas">
+          ${cartao("Dificuldade por unidade", barrasH(ucs) + '<small class="dica">Do pior para o melhor. As primeiras são as áreas que pedem reforço.</small>')}
+          ${cartao("Resultado em cada prova", barrasH(ordem.map((p) => { const r = respDe(al.id, p.id); return { rot: semTeste(p.titulo), valor: pctDe(r), sub: `${r.acertos} acerto(s) · ${r.total - r.acertos} erro(s)` }; })))}
+        </div>
+        ${cartao(`Questões que errou (${erradas.length})`, erradas.length ? `<ol class="piores">${erradas.map((e) => `<li><div class="piores__topo"><b>${esc(curto(semTeste(e.a.titulo), 40))}</b><small>${esc(ucDe(e.a))}</small></div><p>${esc(curto(e.q.enunciado, 180))}</p><small>❌ Marcou: ${alt(e.q, e.x.escolhida)}<br>✅ Correta: ${alt(e.q, e.x.correta)}</small></li>`).join("")}</ol>` : '<p class="vazio">Nenhum erro registrado. 🎉</p>')}`;
+    }
+
+    // ---- 4) Um aluno, uma prova ----
+    function corpoAlunoProva(al, a) {
+      const r = respDe(al.id, a.id);
+      if (!r)
+        return cartao(`${esc(al.nome)} · ${esc(semTeste(a.titulo))}`, '<p class="vazio">Este aluno não respondeu esta prova.</p>');
+      const todos = rs.filter((x) => x.atividade_id === a.id).map(pctDe).sort((x, y) => y - x);
+      const pos = todos.findIndex((v) => v <= pctDe(r) + 1e-9) + 1;
+      const alts = (q, x) =>
+        `<ul class="alts-res">${q.alternativas
+          .map((t, j) => {
+            const cls = j === x.correta ? "certa" : j === x.escolhida ? "errada" : "";
+            const marca = j === x.correta ? "✅" : j === x.escolhida ? "❌" : "";
+            return `<li class="${cls}"><b>${LETRAS[j]}</b><span>${esc(t)}</span><i>${marca}${j === x.escolhida ? " marcou" : ""}</i></li>`;
+          })
+          .join("")}</ul>`;
+      const cards = (r.detalhe || [])
+        .map((x, i) => {
+          const q = qPor[x.q];
+          if (!q) return "";
+          const t = pctQ(q.id);
+          return `<article class="questao-res ${x.acertou ? "ok" : "erro"}"><div class="questao-res__topo"><b>Questão ${i + 1}</b><span class="sel ${x.acertou ? "ok" : "atr"}">${x.acertou ? "Acertou" : "Errou"}</span>${t === null ? "" : `<small>${fmtPct(t)} da turma acertou</small>`}</div><p>${esc(q.enunciado)}</p>${alts(q, x)}</article>`;
+        })
+        .join("");
+      return `<section class="estats">
+          ${kpi(corPctHex(pctDe(r)), "grafico", "% de acertos", fmtPct(pctDe(r)), `${r.acertos} de ${r.total} questões`)}
+          ${kpi("#1F5FA8", "casos", "Nota", fmtNota(r.nota), semTeste(a.titulo))}
+          ${kpi("#D9962B", "alunos", "Posição na turma", `${pos}º <small>de ${todos.length}</small>`, "Entre quem respondeu")}
+          ${kpi("#7B4FB3", "monitor", "Média da turma", fmtPct(mediaProva(a.id)), "Nesta prova")}
+        </section>
+        <section class="cartao"><h3>Questão por questão</h3><div class="pilha">${cards}</div></section>`;
+    }
+    const corPctHex = (p) => (p >= 70 ? "#0F7B6C" : p >= 50 ? "#B8893B" : "#B3261E");
+
+    // ---- Montagem, filtros e eventos ----
+    function desenhar() {
+      const al = alunosL.find((x) => x.id === F.aluno),
+        pr = provas.find((x) => String(x.id) === String(F.prova));
+      const corpo =
+        al && pr ? corpoAlunoProva(al, pr)
+        : al ? corpoAluno(al)
+        : pr ? corpoTurmaProva(pr)
+        : corpoTurma();
+      const resumo = [al ? al.nome : "Todos os alunos", pr ? semTeste(pr.titulo) : "Todas as provas"].join(" · ");
+      tela.innerHTML = `<div class="pagina desemp">${cab}
+        <section class="cartao desemp-filtros">
+          <label class="campo2"><span>Aluno</span><select id="f-aluno"><option value="">Todos os alunos</option>${alunosL.map((x) => `<option value="${x.id}" ${x.id === F.aluno ? "selected" : ""}>${esc(x.nome)}</option>`).join("")}</select></label>
+          <label class="campo2"><span>Prova</span><select id="f-prova"><option value="">Todas as provas</option>${provas.map((x) => `<option value="${x.id}" ${String(x.id) === String(F.prova) ? "selected" : ""}>${esc(semTeste(x.titulo))}</option>`).join("")}</select></label>
+          <div class="desemp-filtros__fim"><span class="sel ok">${esc(resumo)}</span>${F.aluno || F.prova ? '<button type="button" class="btn claro peq" id="f-limpar">Limpar filtros</button>' : ""}</div>
+        </section>
+        ${corpo}</div>`;
+      document.getElementById("f-aluno").addEventListener("change", (e) => {
+        F.aluno = e.target.value;
+        history.replaceState(null, "", "#/desempenho" + (F.aluno ? "/" + F.aluno : ""));
+        desenhar();
+      });
+      document.getElementById("f-prova").addEventListener("change", (e) => {
+        F.prova = e.target.value;
+        desenhar();
+      });
+      const limpar = document.getElementById("f-limpar");
+      if (limpar)
+        limpar.addEventListener("click", () => {
+          F.aluno = "";
+          F.prova = "";
+          history.replaceState(null, "", "#/desempenho");
+          desenhar();
+        });
+      montarLinhas();
+      tela.querySelectorAll("[data-aluno]").forEach((b) =>
+        b.addEventListener("click", () => {
+          F.aluno = b.dataset.aluno;
+          history.replaceState(null, "", "#/desempenho/" + F.aluno);
+          desenhar();
+          window.scrollTo({ top: 0, behavior: "smooth" });
+        }),
+      );
+      tela.querySelectorAll("[data-prova]").forEach((b) =>
+        b.addEventListener("click", () => {
+          F.prova = b.dataset.prova;
+          desenhar();
+          window.scrollTo({ top: 0, behavior: "smooth" });
+        }),
+      );
+    }
+    desenhar();
+  }
+
   function rotear() {
     const [, tipo = "", id] = location.hash.split("/");
     menu(tipo);
@@ -1735,6 +2210,8 @@
     if (tipo === "ucs") return listaUCs();
     if (tipo === "uc" && id) return unidade(id);
     if (tipo === "alunos") return alunos();
+    if (tipo === "desempenho")
+      return desempenho(id || "");
     if (tipo === "monitoramento")
       return id ? monitoramentoAtividade(id) : monitoramentoLista();
     return inicio();

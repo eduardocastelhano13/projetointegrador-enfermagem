@@ -16,6 +16,11 @@ declare
   v_papel text := case when new.raw_user_meta_data->>'tipo' = 'professor'
                        then 'professor' else 'aluno' end;
 begin
+  -- Conta Google: o perfil é criado depois, por criar_perfil_google(), com o tipo escolhido
+  -- na tela (aluno ou professor). Se o gatilho criasse aqui, todo mundo viraria aluno antes.
+  if coalesce(new.raw_app_meta_data->>'provider', '') = 'google' then
+    return new;
+  end if;
   insert into public.perfis (id, nome, papel)
   values (new.id, v_nome, v_papel)
   on conflict (id) do nothing;
@@ -37,7 +42,7 @@ declare
   v_papel text;
 begin
   if v_uid is null then raise exception 'Não autenticado.'; end if;
-  if p_tipo is distinct from 'professor' then raise exception 'Tipo inválido.'; end if;
+  if p_tipo not in ('aluno', 'professor') then raise exception 'Tipo inválido.'; end if;
 
   select coalesce(nullif(raw_user_meta_data->>'full_name', ''),
                   nullif(raw_user_meta_data->>'name', ''),
@@ -45,7 +50,7 @@ begin
     into v_nome from auth.users where id = v_uid;
 
   insert into public.perfis (id, nome, papel)
-  values (v_uid, v_nome, 'professor')
+  values (v_uid, v_nome, p_tipo)
   on conflict (id) do nothing
   returning papel into v_papel;
 
@@ -56,3 +61,7 @@ revoke all on function public.criar_perfil_google(text) from public, anon;
 grant execute on function public.criar_perfil_google(text) to authenticated;
 
 -- 3) Confirme que a RLS de public.perfis NÃO deixa o usuário alterar a própria coluna "papel".
+
+-- 4) (Opcional) Contas de teste que já tinham ficado como "aluno" por causa do erro antigo:
+--    apague-as em Authentication > Users e crie de novo, ou corrija o papel manualmente:
+--    update public.perfis set papel = 'professor' where id = (select id from auth.users where email = 'SEU_EMAIL');
